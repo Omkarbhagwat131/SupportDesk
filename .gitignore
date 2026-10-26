@@ -1,0 +1,45 @@
+# ==============================================================================
+# SUPPORTDESK GITIGNORE CONFIGURATION
+# ==============================================================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build & Release Outputs
+dist/
+build/
+out/
+.expo/
+web-build/
+
+# Environment Variables & Local Secrets (NEVER COMMIT ACTUAL .env FILES)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# Logs & Debugging
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Editor & OS Clutter
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
