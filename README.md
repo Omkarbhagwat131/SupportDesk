@@ -1,6 +1,6 @@
 # SupportDesk Monorepo
 
-SupportDesk is an internal customer support and ticket management platform designed to streamline issue intake, triage, SLA tracking, and agent workflows.
+SupportDesk is a customer support platform under development. The currently implemented feature in this repository is a TypeScript command-line tool that converts ticket records from CSV to JSON.
 
 ---
 
@@ -9,17 +9,17 @@ SupportDesk is an internal customer support and ticket management platform desig
 ```text
 supportdesk/
 ├── apps/
-│   ├── api/          # Node.js + Express + TypeScript + Prisma backend API
-│   ├── web/          # React + Vite web dashboard for agents and admins
-│   └── mobile/       # Expo React Native mobile application
-├── agents/           # AI agent configurations and prompts (Week 7)
+│   ├── api/          # TypeScript CSV-to-JSON ticket importer
+│   ├── web/          # Placeholder for the planned web dashboard
+│   └── mobile/       # Placeholder for the planned mobile application
+├── agents/           # Placeholder for agent configurations and prompts
 ├── automation/
-│   └── n8n/          # Exported n8n workflow JSON files
-├── postman/          # Postman API collections and non-secret environments
-├── infra/            # Docker Compose, database setup, and deployment scripts
-├── docs/             # PRD, architecture decisions, SOPs, and Prompt Journal
+│   └── n8n/          # Placeholder for n8n workflows
+├── postman/          # Placeholder for API collections and environments
+├── infra/            # Placeholder for infrastructure and deployment files
+├── docs/             # Project documentation and prompt journal
 ├── .github/
-│   └── workflows/    # GitHub Actions CI/CD pipelines
+│   └── workflows/    # Placeholder for GitHub Actions workflows
 ├── .gitignore        # Excluded files, folders, and local secrets
 ├── .env.example      # Template for environment variables (safe placeholders)
 └── README.md         # Project overview and documentation
@@ -48,6 +48,8 @@ To save the result to a JSON file instead, provide an output path:
 ```powershell
 npm run import --prefix apps/api -- fixtures/tickets.csv fixtures/tickets-output.json
 ```
+
+If the output file already exists, it will be overwritten.
 
 You can also run the commands from the API folder:
 
