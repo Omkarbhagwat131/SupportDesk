@@ -1,0 +1,3 @@
+subject,requester_email,description,priority,status
+"Cannot sign in, even after reset",alex@example.test,"The reset link, when opened, returns an error.",HIGH,OPEN
+"Update billing details",sam@example.test,"Please explain how to change the card on file.",MEDIUM,IN_PROGRESS
