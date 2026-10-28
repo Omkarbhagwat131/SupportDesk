@@ -1,0 +1,22 @@
+{
+  "tickets": [
+    {
+      "id": "TKT-20260115-000001",
+      "subject": "Cannot sign in, even after reset",
+      "requesterEmail": "alex@example.test",
+      "description": "The reset link, when opened, returns an error.",
+      "priority": "HIGH",
+      "status": "OPEN",
+      "createdAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "TKT-20260115-000002",
+      "subject": "Update billing details",
+      "requesterEmail": "sam@example.test",
+      "description": "Please explain how to change the card on file.",
+      "priority": "MEDIUM",
+      "status": "IN_PROGRESS",
+      "createdAt": "2026-01-15T00:00:00.000Z"
+    }
+  ]
+}
