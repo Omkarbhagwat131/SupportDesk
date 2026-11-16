@@ -1,0 +1,501 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SupportDesk API",
+    "version": "1.0.0",
+    "description": "Authenticated support ticket, comment, and account endpoints."
+  },
+  "servers": [
+    { "url": "http://localhost:3000" }
+  ],
+  "tags": [
+    { "name": "Health" },
+    { "name": "Authentication" },
+    { "name": "Tickets" },
+    { "name": "Comments" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Check API liveness",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API process is available.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessEnvelope" },
+                "example": {
+                  "data": { "status": "ok" },
+                  "error": null,
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a customer account",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer account created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": { "user": { "$ref": "#/components/schemas/User" } },
+                          "required": ["user"]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log in",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bearer token and safe user profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/LoginResult" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/tickets": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "List visible tickets",
+        "description": "Customers only receive their own tickets. Agents and admins can list all tickets.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 } },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Case-insensitive ticket status.",
+            "schema": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"] }
+          },
+          { "name": "priority", "in": "query", "schema": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] } },
+          { "name": "assigneeId", "in": "query", "schema": { "type": "string", "minLength": 1, "maxLength": 100 } },
+          { "name": "search", "in": "query", "description": "Search subject, description, and requester email.", "schema": { "type": "string", "minLength": 1, "maxLength": 200 } },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["createdAt", "updatedAt", "status", "priority", "subject"], "default": "createdAt" }
+          },
+          { "name": "sortOrder", "in": "query", "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of visible tickets.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TicketListResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Create a ticket",
+        "description": "Customers are linked to the authenticated user. Agents and admins may provide requester details.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateTicketRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket created.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TicketResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/tickets/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }
+      ],
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "Get a ticket",
+        "description": "Customers can only retrieve their own tickets; agents and admins can retrieve any ticket.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Ticket details.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TicketResponse" } } } },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "put": {
+        "tags": ["Tickets"],
+        "summary": "Update a ticket",
+        "description": "Only agents and admins may update tickets.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTicketRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Ticket updated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TicketResponse" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["Tickets"],
+        "summary": "Delete a ticket",
+        "description": "Only agents and admins may delete tickets.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Ticket deleted.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DeleteResponse" },
+                "example": { "data": null, "error": null, "meta": {} }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/tickets/{id}/comments": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }
+      ],
+      "get": {
+        "tags": ["Comments"],
+        "summary": "List comments for a ticket",
+        "description": "Customers can see public comments on their own tickets. Agents and admins can see public and internal comments on any ticket.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Comments in chronological order.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CommentListResponse" } } } },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "post": {
+        "tags": ["Comments"],
+        "summary": "Create a comment",
+        "description": "Author identity comes from the authenticated user. Customers may create only public comments on their own tickets; agents and admins may create public or internal comments.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCommentRequest" } } }
+        },
+        "responses": {
+          "201": { "description": "Comment created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CommentResponse" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "SuccessEnvelope": {
+        "type": "object",
+        "properties": {
+          "data": {},
+          "error": { "type": "null" },
+          "meta": { "type": "object", "additionalProperties": true }
+        },
+        "required": ["data", "error", "meta"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "null" },
+          "error": { "$ref": "#/components/schemas/ApiError" },
+          "meta": { "type": "object", "additionalProperties": true }
+        },
+        "required": ["data", "error", "meta"]
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "details": {}
+        },
+        "required": ["code", "message"]
+      },
+      "ValidationIssue": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "array", "items": {} },
+          "message": { "type": "string" }
+        },
+        "required": ["path", "message"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 12, "maxLength": 72 }
+        },
+        "required": ["name", "email", "password"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 1, "maxLength": 72 }
+        },
+        "required": ["email", "password"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["CUSTOMER", "AGENT", "ADMIN"] }
+        },
+        "required": ["id", "name", "email", "role"]
+      },
+      "LoginResult": {
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" },
+          "token": { "type": "string" },
+          "tokenType": { "type": "string", "const": "Bearer" }
+        },
+        "required": ["user", "token", "tokenType"]
+      },
+      "CreateTicketRequest": {
+        "type": "object",
+        "properties": {
+          "subject": { "type": "string", "minLength": 1 },
+          "requesterEmail": { "type": "string", "format": "email" },
+          "description": { "type": "string", "minLength": 1 },
+          "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
+          "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"] }
+        },
+        "required": ["subject", "requesterEmail", "description"]
+      },
+      "UpdateTicketRequest": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "subject": { "type": "string", "minLength": 1 },
+          "requesterEmail": { "type": "string", "format": "email" },
+          "description": { "type": "string", "minLength": 1 },
+          "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
+          "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"] }
+        }
+      },
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "subject": { "type": "string" },
+          "requesterEmail": { "type": "string", "format": "email" },
+          "requesterId": { "type": ["string", "null"] },
+          "assigneeId": { "type": ["string", "null"] },
+          "description": { "type": "string" },
+          "category": { "type": ["string", "null"] },
+          "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
+          "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"] },
+          "slaDueAt": { "type": ["string", "null"], "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "subject", "requesterEmail", "requesterId", "assigneeId", "description", "category", "priority", "status", "slaDueAt", "createdAt", "updatedAt"]
+      },
+      "TicketResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Ticket" } } }
+        ]
+      },
+      "TicketListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/Ticket" } },
+              "meta": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer" },
+                  "limit": { "type": "integer" },
+                  "total": { "type": "integer" },
+                  "totalPages": { "type": "integer" }
+                },
+                "required": ["page", "limit", "total", "totalPages"]
+              }
+            }
+          }
+        ]
+      },
+      "DeleteResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          { "type": "object", "properties": { "data": { "type": "null" } } }
+        ]
+      },
+      "CreateCommentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "body": { "type": "string", "minLength": 1, "maxLength": 10000 },
+          "isInternal": { "type": "boolean", "default": false }
+        },
+        "required": ["body"]
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "ticketId": { "type": "string" },
+          "body": { "type": "string" },
+          "isInternal": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "author": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" }
+            },
+            "required": ["id", "name"]
+          }
+        },
+        "required": ["id", "ticketId", "body", "isInternal", "createdAt", "author"]
+      },
+      "CommentListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Comment" } } } }
+        ]
+      },
+      "CommentResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Comment" } } }
+        ]
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Request failed validation.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "UnauthorizedError": {
+        "description": "Authentication is required or the token is invalid.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "ForbiddenError": {
+        "description": "The authenticated role cannot perform this action.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "NotFoundError": {
+        "description": "The requested ticket does not exist or is outside the caller's access scope.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "ConflictError": {
+        "description": "The account conflicts with existing data.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "RateLimitError": {
+        "description": "Too many login attempts.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "ServerError": {
+        "description": "Unexpected server error.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # SupportDesk Monorepo
 
-SupportDesk is a customer support platform under development. The currently implemented feature in this repository is a TypeScript command-line tool that converts ticket records from CSV to JSON.
+SupportDesk is a customer support platform under development. The repository includes a TypeScript ticket CSV-to-JSON importer and a local PostgreSQL database managed with Prisma.
 
 ---
 
@@ -9,7 +9,7 @@ SupportDesk is a customer support platform under development. The currently impl
 ```text
 supportdesk/
 ├── apps/
-│   ├── api/          # TypeScript CSV-to-JSON ticket importer
+│   ├── api/          # Ticket CSV importer and Prisma database tools
 │   ├── web/          # Placeholder for the planned web dashboard
 │   └── mobile/       # Placeholder for the planned mobile application
 ├── agents/           # Placeholder for agent configurations and prompts
@@ -17,6 +17,8 @@ supportdesk/
 │   └── n8n/          # Placeholder for n8n workflows
 ├── postman/          # Placeholder for API collections and environments
 ├── infra/            # Placeholder for infrastructure and deployment files
+├── prisma/           # PostgreSQL schema and migrations
+├── compose.yaml       # Local PostgreSQL service
 ├── docs/             # Project documentation and prompt journal
 ├── .github/
 │   └── workflows/    # Placeholder for GitHub Actions workflows
@@ -24,6 +26,74 @@ supportdesk/
 ├── .env.example      # Template for environment variables (safe placeholders)
 └── README.md         # Project overview and documentation
 ```
+
+## Local PostgreSQL database
+
+The API's Prisma schema describes the ticket fields emitted by the CSV importer. To start the local PostgreSQL database, first create a root `.env` from the safe development template, then start Docker Compose:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+```
+
+Install the API dependencies, apply the initial migration, and generate the Prisma Client:
+
+```powershell
+npm install --prefix apps/api
+npm run db:migrate --prefix apps/api
+npm run prisma:generate --prefix apps/api
+npm run db:seed --prefix apps/api
+```
+
+The local database listens on `localhost:5432` and persists data in the `supportdesk_postgres_data` Docker volume. The credentials in `.env.example` are for local development only; change them before using any non-local environment. Stop the database with `docker compose down` (the named volume is retained). To remove the database and its data, use `docker compose down -v`.
+
+The initial ticket-table migration is committed in `prisma/migrations`. For later schema changes, update `prisma/schema.prisma` and create/apply a migration with `npm run db:migrate --prefix apps/api -- --name describe_your_change`.
+
+The schema models users, tickets, comments, tags, attachments, and audit logs. The design assumptions, relationships, and index choices are recorded in [`docs/database-design-notes.md`](docs/database-design-notes.md), and the matching ER diagram is in [`docs/supportdesk-erd.md`](docs/supportdesk-erd.md).
+
+To prepare the 50 sample records, convert the checked-in CSV using the ticket importer, then apply the seed:
+
+```powershell
+npm run import --prefix apps/api -- fixtures/sample-tickets.csv fixtures/sample-tickets.json
+npm run db:seed --prefix apps/api
+```
+
+The seed reads the generated JSON, creates missing sample requester accounts, and upserts stable sample ticket IDs. It is safe to rerun and keeps exactly 50 records with IDs beginning `SAMPLE-TKT-`.
+
+Useful Prisma commands:
+
+```powershell
+npm run db:migrate --prefix apps/api -- --name describe_your_change
+npm run db:deploy --prefix apps/api
+npm run db:studio --prefix apps/api
+```
+
+## API authentication and ticket access
+
+The API provides `POST /api/auth/register` and `POST /api/auth/login`. Registration stores a bcrypt password hash; login returns a bearer token. Set `JWT_SECRET` in the local `.env` to a unique, random value of at least 32 bytes before starting the API. `JWT_EXPIRES_IN` accepts a duration such as `1d` and cannot exceed 30 days.
+
+Ticket routes require `Authorization: Bearer <token>`. Customers can list and retrieve only tickets linked to their user account and create tickets for their own account. Agents and admins can access all tickets; only agents and admins can update or delete tickets. Existing imported tickets with no verified requester link are not visible to customers.
+
+`GET /api/tickets` supports pagination (`page`, `limit`, maximum 100), status, priority, assignee, text search, and allowlisted sorting. The `meta` envelope returns `page`, `limit`, `total`, and `totalPages`. Customers can create/list public comments only on their own tickets; agents and admins can create/list public and internal comments. Internal comments are never returned to customers.
+
+The interactive OpenAPI documentation is served at `http://localhost:3000/docs`.
+
+Helmet security headers are enabled. Browser requests are allowed only from origins listed in `CORS_ORIGINS`, a comma-separated list of exact origins; local development defaults to `http://localhost:5173`. Postman and other non-browser clients do not need a CORS origin. Login is limited to 10 attempts per client IP in a 15-minute window.
+
+For example, in Postman register with `POST http://localhost:3000/api/auth/register`, then log in with `POST http://localhost:3000/api/auth/login`. Use the returned token via **Authorization → Bearer Token** when calling `http://localhost:3000/api/tickets`.
+
+The [Day 10 authentication results](./postman/documents/day-10-auth-results.md) record expected and observed local API responses.
+
+### Isolated integration tests
+
+The integration test command only accepts a loopback PostgreSQL URL for the dedicated `supportdesk_test` database on port `5433`. Copy the example `TEST_DATABASE_URL`, start the separate compose profile, then run:
+
+```powershell
+docker compose --profile test up -d postgres-test
+npm run test:integration --prefix apps/api
+```
+
+The integration test runner applies migrations to that database and cleans up only its own fixtures. It refuses to run against the development database.
 
 ## Import tickets from CSV
 
@@ -61,7 +131,7 @@ npm run import -- fixtures/tickets.csv
 
 ### CSV and JSON format
 
-The CSV must have these unique column names: `subject`, `requester_email`, and `description`. `priority` and `status` are optional. Priority can be `LOW`, `MEDIUM`, `HIGH`, or `URGENT` and defaults to `MEDIUM`. Status can be `OPEN`, `IN_PROGRESS`, or `RESOLVED` and defaults to `OPEN`. Email, subject, and description values are required. Standard CSV quoted values may contain commas.
+The CSV must have these unique column names: `subject`, `requester_email`, and `description`. `priority` and `status` are optional. Priority can be `P1`, `P2`, `P3`, or `P4` (from highest to lowest urgency) and defaults to `P3`. Status can be `OPEN`, `IN_PROGRESS`, `WAITING_ON_CUSTOMER`, `RESOLVED`, or `CLOSED` and defaults to `OPEN`. Email, subject, and description values are required. Standard CSV quoted values may contain commas.
 
 The output is a JSON object with one `tickets` array. Each ticket has `id`, `subject`, `requesterEmail`, `description`, `priority`, `status`, and `createdAt` properties. An ID looks like `TKT-20260115-000001`: `TKT`, the UTC date, and a sequential number. The number increases while this process is running. IDs are not guaranteed unique across separate runs or machines.
 

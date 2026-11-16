@@ -1,0 +1,51 @@
+subject,requester_email,description,priority,status
+"Cannot reset password - Northstar Labs",alex.morgan@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Northstar Labs",alex.morgan@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Northstar Labs",alex.morgan@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Northstar Labs",alex.morgan@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Northstar Labs",alex.morgan@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Riverbend Studio",sam.rivera@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Riverbend Studio",sam.rivera@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Riverbend Studio",sam.rivera@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Riverbend Studio",sam.rivera@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Riverbend Studio",sam.rivera@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Brightpath Health",taylor.chen@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Brightpath Health",taylor.chen@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Brightpath Health",taylor.chen@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Brightpath Health",taylor.chen@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Brightpath Health",taylor.chen@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Summit Goods",jordan.patel@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Summit Goods",jordan.patel@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Summit Goods",jordan.patel@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Summit Goods",jordan.patel@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Summit Goods",jordan.patel@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Cedar and Stone",casey.brooks@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Cedar and Stone",casey.brooks@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Cedar and Stone",casey.brooks@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Cedar and Stone",casey.brooks@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Cedar and Stone",casey.brooks@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Bluebird Travel",morgan.lee@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Bluebird Travel",morgan.lee@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Bluebird Travel",morgan.lee@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Bluebird Travel",morgan.lee@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Bluebird Travel",morgan.lee@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Atlas Learning",riley.thompson@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Atlas Learning",riley.thompson@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Atlas Learning",riley.thompson@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Atlas Learning",riley.thompson@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Atlas Learning",riley.thompson@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Little Finch Market",jamie.wilson@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Little Finch Market",jamie.wilson@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Little Finch Market",jamie.wilson@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Little Finch Market",jamie.wilson@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Little Finch Market",jamie.wilson@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Evergreen Finance",avery.kim@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Evergreen Finance",avery.kim@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Evergreen Finance",avery.kim@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Evergreen Finance",avery.kim@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Evergreen Finance",avery.kim@example.test,"Several team members are unable to access the service.",P1,CLOSED
+"Cannot reset password - Cloudline Media",drew.okafor@example.test,"Password reset email did not arrive after two attempts.",P2,OPEN
+"Invoice total looks incorrect - Cloudline Media",drew.okafor@example.test,"The latest invoice total differs from the expected plan charge.",P3,IN_PROGRESS
+"Dashboard loads slowly - Cloudline Media",drew.okafor@example.test,"The dashboard takes over thirty seconds to load.",P2,WAITING_ON_CUSTOMER
+"Update account contact - Cloudline Media",drew.okafor@example.test,"Please update the primary account contact information.",P4,RESOLVED
+"Team cannot access service - Cloudline Media",drew.okafor@example.test,"Several team members are unable to access the service.",P1,CLOSED

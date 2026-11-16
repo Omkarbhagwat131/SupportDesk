@@ -12,8 +12,8 @@ test("generates IDs in the documented format without duplicates in this run", ()
 test("converts multiple rows and keeps values under the right headers", () => {
   const csv = [
     "status,description,requester_email,subject,priority",
-    'OPEN,"Link, does not work",alex@example.test,"Sign-in help",HIGH',
-    "RESOLVED,Update card,sam@example.test,Billing,LOW",
+    'OPEN,"Link, does not work",alex@example.test,"Sign-in help",P2',
+    "RESOLVED,Update card,sam@example.test,Billing,P4",
   ].join("\n");
 
   const result = convertCsv(csv, new Date("2026-01-15T00:00:00Z"));
@@ -22,13 +22,31 @@ test("converts multiple rows and keeps values under the right headers", () => {
   assert.equal(result.tickets[0].subject, "Sign-in help");
   assert.equal(result.tickets[0].description, "Link, does not work");
   assert.equal(result.tickets[0].requesterEmail, "alex@example.test");
-  assert.equal(result.tickets[0].priority, "HIGH");
+  assert.equal(result.tickets[0].priority, "P2");
   assert.equal(result.tickets[1].status, "RESOLVED");
 });
 
 test("rejects empty CSV and accepts headers without any ticket rows", () => {
   assert.throws(() => convertCsv(""), /CSV is empty/);
   assert.deepEqual(convertCsv("subject,requester_email,description"), { tickets: [] });
+});
+
+test("uses roadmap defaults and rejects values outside the roadmap enums", () => {
+  const defaults = convertCsv(
+    "subject,requester_email,description\nExample,alex@example.test,Help",
+    new Date("2026-01-15T00:00:00Z"),
+  ).tickets[0];
+  assert.equal(defaults.priority, "P3");
+  assert.equal(defaults.status, "OPEN");
+
+  assert.throws(
+    () => convertCsv("subject,requester_email,description,priority\nExample,a@example.test,Help,URGENT"),
+    /invalid priority/,
+  );
+  assert.throws(
+    () => convertCsv("subject,requester_email,description,status\nExample,a@example.test,Help,WAITING"),
+    /invalid status/,
+  );
 });
 
 test("reports missing columns and invalid rows", () => {

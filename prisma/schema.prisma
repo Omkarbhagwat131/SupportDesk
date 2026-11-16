@@ -1,0 +1,144 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../apps/api/src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  AGENT
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_ON_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum AuditTargetType {
+  USER
+  TICKET
+  COMMENT
+  TAG
+  ATTACHMENT
+}
+
+model User {
+  id               String     @id @default(cuid())
+  name             String
+  email            String     @unique
+  passwordHash     String?
+  role             UserRole   @default(CUSTOMER)
+  createdAt        DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime   @updatedAt @db.Timestamptz(3)
+  requestedTickets Ticket[]   @relation("TicketRequester")
+  assignedTickets  Ticket[]   @relation("TicketAssignee")
+  comments         Comment[]  @relation("CommentAuthor")
+  auditLogs        AuditLog[] @relation("AuditActor")
+
+  @@map("users")
+}
+
+model Ticket {
+  id             String         @id
+  subject        String
+  requesterEmail String
+  requesterId    String?
+  assigneeId     String?
+  description    String
+  category       String?
+  priority       TicketPriority @default(P3)
+  status         TicketStatus   @default(OPEN)
+  slaDueAt       DateTime?      @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
+  requester      User?          @relation("TicketRequester", fields: [requesterId], references: [id], onDelete: SetNull)
+  assignee       User?          @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments       Comment[]
+  tags           TicketTag[]
+  attachments    Attachment[]
+
+  @@index([requesterEmail])
+  @@index([requesterId])
+  @@index([assigneeId])
+  @@index([status, priority, createdAt])
+  @@map("tickets")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  ticketId   String
+  authorId   String
+  body       String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author     User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Tag {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  tickets   TicketTag[]
+
+  @@map("tags")
+}
+
+model TicketTag {
+  ticketId String
+  tagId    String
+  addedAt  DateTime @default(now()) @db.Timestamptz(3)
+  ticket   Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([ticketId, tagId])
+  @@index([tagId])
+  @@map("ticket_tags")
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  ticketId   String
+  fileName   String
+  storageKey String   @unique
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("attachments")
+}
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType AuditTargetType
+  targetId   String
+  details    Json?
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  actor      User?           @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([targetType, targetId])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}

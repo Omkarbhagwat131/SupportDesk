@@ -29,6 +29,23 @@ How you verified the answer or result:
     i read the output and understand that it is correct or not;
 
 
+Date: 7 November 2026
+Task: Week 2 Day 2 — database design with AI
+
+Prompt/context: Follow the supplied SupportDesk database-design checklist. Inspect the repository, use the roadmap entities and enum values, preserve the current local database and its 50 tickets, and document assumptions where the PRD is unavailable.
+
+Summary of the AI response: The repository had no PRD, only a ticket-only schema and CSV importer. After the lead approved proceeding from the roadmap with assumptions documented, I expanded the schema to users, tickets, comments, tags, attachments, and audit logs; added design notes and an ERD; and prepared CSV-generated JSON for the idempotent seed.
+
+What changed and why:
+- Added model relationships, ticket lifecycle/priority enums, constraints, delete behavior, and query-backed indexes in `prisma/schema.prisma`.
+- Added a follow-up migration that maps old priorities without deleting the 50 current tickets.
+- Added `apps/api/fixtures/sample-tickets.csv` and generated its JSON with the existing CSV importer.
+- Updated the seed to create sample requester users and upsert exactly 50 stable sample ticket IDs.
+- Added `docs/database-design-notes.md` and `docs/supportdesk-erd.md`; open business decisions are called out because no PRD was present.
+
+Verification: Pending migration application to the local database, an empty-database migration check, seed count verification, tests, and build.
+
+
 
     [1. CONTEXT]
 I am working in the existing SupportDesk repository, which is a Node.js and TypeScript project. I need to build a beginner-friendly command-line interface (CLI) utility to process incoming customer support tickets from CSV files into JSON.
@@ -150,3 +167,32 @@ Tests passed
 
 Tests completed successfully
 0
+
+## 16 November 2026 — Week 2 Day 5 (Overall Day 11)
+
+**Prompt/context:** Continue the SupportDesk Day 11 roadmap. The ticket query design was confirmed with the project lead: keep `data` as an array, expose flat pagination metadata, and cap `limit` at 100. The lead also approved the comment policy: customers may create/list public comments only on their own tickets; agents/admins may create/list public and internal comments; no edit/delete endpoints.
+
+**Summary of the AI response:** Added the remaining ticket-query route validation and metadata earlier in this session, then implemented comment create/list routes, scoped comment persistence, OpenAPI documentation at `/docs`, Jest service tests, and a separate Supertest integration suite configured for a dedicated local test database.
+
+**What changed and why:**
+- Added Zod comment validation with strict input fields so clients cannot supply an author ID.
+- Added repository queries that first enforce ticket access, hide internal comments from customers, and select only safe author fields.
+- Added service/controller/routes for customer-visible and staff-internal comments.
+- Exported the Express app separately from the listener; added `/health`, Swagger UI at `/docs`, and `apps/api/openapi.json`.
+- Added Jest service tests with repository doubles/mocks and coverage configuration.
+- Added a Supertest integration suite, a preflight that only permits `localhost:5433/supportdesk_test`, and a separate Compose `test` profile/volume.
+- Updated the API reference, README, and this journal.
+
+**Test-first record:** The comment service Jest tests were written before the service implementation. The initial run failed with TypeScript `TS2307` because `comments.service.ts` did not exist. After implementation, the tests passed, including customer internal-comment denial, scoped list delegation, authenticated agent author identity, and missing-ticket propagation.
+
+**Baseline before the remaining Day 11 work:** The existing API suite had 33 passing Node tests and 0 failures.
+
+**Verification (actual results):**
+- `npm test`: passed; 33 existing Node tests and 18 Jest tests.
+- `npm run test:coverage`: passed; service coverage 97.61% statements/lines, 91.66% functions, 100% branches.
+- `npm run build`: passed.
+- `docker compose --profile test config --quiet`: passed.
+- Browser check of `http://localhost:3107/docs/`: Swagger UI rendered with Health, Authentication, Tickets, Comments, and schemas.
+- `npm run test:integration`: not run because `TEST_DATABASE_URL` is not configured. Docker Desktop's PostgreSQL daemon is unavailable in this environment; the runner refused to fall back to the development database.
+
+**Remaining verification:** Start the dedicated `postgres-test` Compose profile, configure the local `TEST_DATABASE_URL` from `.env.example`, then rerun `npm run test:integration`. No migration or database integration result is claimed yet.

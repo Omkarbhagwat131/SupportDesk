@@ -17,7 +17,7 @@ test("converts headers into JSON properties and preserves quoted commas", () => 
         subject: "Sign-in help",
         requesterEmail: "alex@example.test",
         description: "The link, when opened, returns an error.",
-        priority: "MEDIUM",
+        priority: "P3",
         status: "OPEN",
         createdAt: "2026-01-15T00:00:00.000Z",
       },

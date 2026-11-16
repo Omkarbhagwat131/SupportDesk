@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { parse } from "csv-parse/sync";
+import { TicketPriority, TicketStatus } from "./generated/prisma/client";
 
-type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-type Status = "OPEN" | "IN_PROGRESS" | "RESOLVED";
+type Priority = (typeof TicketPriority)[keyof typeof TicketPriority];
+type Status = (typeof TicketStatus)[keyof typeof TicketStatus];
 
 type Ticket = {
   id: string;
@@ -16,8 +17,8 @@ type Ticket = {
 
 const requiredHeaders = ["subject", "requester_email", "description"];
 const allowedHeaders = [...requiredHeaders, "priority", "status"];
-const priorities: Priority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const statuses: Status[] = ["OPEN", "IN_PROGRESS", "RESOLVED"];
+const priorities: Priority[] = Object.values(TicketPriority);
+const statuses: Status[] = Object.values(TicketStatus);
 
 let ticketNumber = 0;
 
@@ -71,7 +72,7 @@ export function convertCsv(csvText: string, date = new Date()): { tickets: Ticke
     const subject = value("subject");
     const requesterEmail = value("requester_email");
     const description = value("description");
-    const priority = (value("priority").toUpperCase() || "MEDIUM") as Priority;
+    const priority = (value("priority").toUpperCase() || "P3") as Priority;
     const status = (value("status").toUpperCase() || "OPEN") as Status;
 
     if (!subject || !requesterEmail || !description) {
