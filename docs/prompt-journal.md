@@ -29,6 +29,23 @@ How you verified the answer or result:
     i read the output and understand that it is correct or not;
 
 
+Date: 7 November 2026
+Task: Week 2 Day 2 — database design with AI
+
+Prompt/context: Follow the supplied SupportDesk database-design checklist. Inspect the repository, use the roadmap entities and enum values, preserve the current local database and its 50 tickets, and document assumptions where the PRD is unavailable.
+
+Summary of the AI response: The repository had no PRD, only a ticket-only schema and CSV importer. After the lead approved proceeding from the roadmap with assumptions documented, I expanded the schema to users, tickets, comments, tags, attachments, and audit logs; added design notes and an ERD; and prepared CSV-generated JSON for the idempotent seed.
+
+What changed and why:
+- Added model relationships, ticket lifecycle/priority enums, constraints, delete behavior, and query-backed indexes in `prisma/schema.prisma`.
+- Added a follow-up migration that maps old priorities without deleting the 50 current tickets.
+- Added `apps/api/fixtures/sample-tickets.csv` and generated its JSON with the existing CSV importer.
+- Updated the seed to create sample requester users and upsert exactly 50 stable sample ticket IDs.
+- Added `docs/database-design-notes.md` and `docs/supportdesk-erd.md`; open business decisions are called out because no PRD was present.
+
+Test and verification outcomes are recorded separately in [test-results.md](./test-results.md).
+
+
 
     [1. CONTEXT]
 I am working in the existing SupportDesk repository, which is a Node.js and TypeScript project. I need to build a beginner-friendly command-line interface (CLI) utility to process incoming customer support tickets from CSV files into JSON.
@@ -127,26 +144,40 @@ Why It Matters:
 3.Checks that generated IDs are unique.
 4.Ensures IDs follow the SD-0001 pattern.
 
-The actual cammand:
-npx jest apps/api/src/tests/ticketId.test.ts apps/api/src/tests/csvToJson.test.ts
+The command and its recorded result are kept separately in [test-results.md](./test-results.md).
 
-Test result
+## 16 November 2026 — Week 2 Day 5 (Overall Day 11)
 
-Test suites executed
+**Prompt/context:** Continue the SupportDesk Day 11 roadmap. The ticket query design was confirmed with the project lead: keep `data` as an array, expose flat pagination metadata, and cap `limit` at 100. The lead also approved the comment policy: customers may create/list public comments only on their own tickets; agents/admins may create/list public and internal comments; no edit/delete endpoints.
 
-2
+**Summary of the AI response:** Added the remaining ticket-query route validation and metadata earlier in this session, then implemented comment create/list routes, scoped comment persistence, OpenAPI documentation at `/docs`, Jest service tests, and a separate Supertest integration suite configured for a dedicated local test database.
 
-Test suites passed
+**What changed and why:**
+- Added Zod comment validation with strict input fields so clients cannot supply an author ID.
+- Added repository queries that first enforce ticket access, hide internal comments from customers, and select only safe author fields.
+- Added service/controller/routes for customer-visible and staff-internal comments.
+- Exported the Express app separately from the listener; added `/health`, Swagger UI at `/docs`, and `apps/api/openapi.json`.
+- Added Jest service tests with repository doubles/mocks and coverage configuration.
+- Added a Supertest integration suite, a preflight that only permits `localhost:5433/supportdesk_test`, and a separate Compose `test` profile/volume.
+- Updated the API reference, README, and this journal.
 
-0
+Test-first history and verification outcomes are recorded separately in [test-results.md](./test-results.md).
 
-Test suites failed
+## Week 2 Day 14 — Ticket screens
 
-2
+**Prompt/context:** Build the ticket list, detail, create, status-update, and comment experience in the existing React application. Follow the actual API schemas and permissions, use the existing TanStack Query setup, keep API calls out of presentational components, and support URL-backed list filters.
 
-Tests passed
+**Summary of the implementation:** Added a ticket creation page and detail page, linked tickets from the list, added staff-only status controls and internal-comment creation, and added public/internal comment rendering. List search, status, priority, assignee, sorting, and pagination are reflected in supported URL query parameters. The web form uses the API's canonical Zod schemas rather than maintaining copies.
 
-0
+**What changed and why:**
+- Added ticket detail/create/comment API functions and TanStack Query hooks with query keys and mutation invalidation.
+- Added React Hook Form validation, field-level server validation messages, loading/error states, and a creation confirmation on the new ticket's detail page.
+- Kept customer internal comments hidden in the UI as well as relying on the API's role-scoped response; only agents/admins see status controls or the internal-note checkbox.
+- Cleared the query cache on login and logout so ticket data from a previous user is not retained across account changes.
+- Added responsive layout styles and focused ticket API/query-parameter tests.
 
-Tests completed successfully
-0
+Verification notes, test outputs, and manual browser evidence are kept separately in [test-results.md](./test-results.md).
+
+## Week 3 — Day 2 (Day 14): Ticket Screens End to End
+
+**Prompt:

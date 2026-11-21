@@ -4,15 +4,54 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "start": "tsx src/server.ts",
     "import": "tsx src/importTickets.ts",
-    "test": "tsx --test src/importTickets.test.ts src/tests/ticketId.test.ts src/tests/csvToJson.test.ts"
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "test": "npm run test:node && npm run test:unit",
+    "test:node": "node --import tsx --import ./src/tests/node-test.setup.ts --test src/importTickets.test.ts src/tests/ticketId.test.ts src/tests/csvToJson.test.ts src/tests/sampleTickets.test.ts src/tests/auth.test.ts src/tests/password-reset.test.ts src/tests/security-middleware.test.ts src/tests/request-logger.test.ts src/tests/error-handler.test.ts",
+    "test:unit": "jest --config jest.config.cjs --runInBand",
+    "test:coverage": "jest --config jest.config.cjs --runInBand --coverage",
+    "test:integration": "tsx src/tests/run-integration.ts"
   },
   "dependencies": {
-    "csv-parse": "^7.0.3"
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "csv-parse": "^7.0.3",
+    "dotenv": "^18.0.9",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
+    "@types/supertest": "^6.0.3",
+    "@types/swagger-ui-express": "^4.1.8",
+    "jest": "^29.7.0",
+    "prisma": "^7.10.1",
+    "supertest": "^7.3.2",
+    "ts-jest": "^29.4.15",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "esbuild@0.28.2": true,
+    "bcrypt@6.0.0": true
   }
 }
