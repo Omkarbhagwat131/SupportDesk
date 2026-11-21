@@ -118,6 +118,76 @@
         }
       }
     },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request a local password reset link",
+        "description": "Development only. Returns the same response for existing and unknown email addresses; in local development, a valid reset link is written to the API terminal.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ForgotPasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A generic response that does not reveal whether the account exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/MessageResult" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "503": { "description": "Password reset is not enabled outside local development." },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Set a new password with a reset token",
+        "description": "Development only. Reset tokens expire after 30 minutes and can be used once.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResetPasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/MessageResult" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "503": { "description": "Password reset is not enabled outside local development." },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
     "/api/tickets": {
       "get": {
         "tags": ["Tickets"],
@@ -333,6 +403,28 @@
           "password": { "type": "string", "minLength": 1, "maxLength": 72 }
         },
         "required": ["email", "password"]
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": { "type": "string", "format": "email" }
+        },
+        "required": ["email"]
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "token": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "password": { "type": "string", "minLength": 12, "maxLength": 72 }
+        },
+        "required": ["token", "password"]
+      },
+      "MessageResult": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } },
+        "required": ["message"]
       },
       "User": {
         "type": "object",

@@ -43,7 +43,7 @@ What changed and why:
 - Updated the seed to create sample requester users and upsert exactly 50 stable sample ticket IDs.
 - Added `docs/database-design-notes.md` and `docs/supportdesk-erd.md`; open business decisions are called out because no PRD was present.
 
-Verification: Pending migration application to the local database, an empty-database migration check, seed count verification, tests, and build.
+Test and verification outcomes are recorded separately in [test-results.md](./test-results.md).
 
 
 
@@ -144,29 +144,7 @@ Why It Matters:
 3.Checks that generated IDs are unique.
 4.Ensures IDs follow the SD-0001 pattern.
 
-The actual cammand:
-npx jest apps/api/src/tests/ticketId.test.ts apps/api/src/tests/csvToJson.test.ts
-
-Test result
-
-Test suites executed
-
-2
-
-Test suites passed
-
-0
-
-Test suites failed
-
-2
-
-Tests passed
-
-0
-
-Tests completed successfully
-0
+The command and its recorded result are kept separately in [test-results.md](./test-results.md).
 
 ## 16 November 2026 — Week 2 Day 5 (Overall Day 11)
 
@@ -183,16 +161,23 @@ Tests completed successfully
 - Added a Supertest integration suite, a preflight that only permits `localhost:5433/supportdesk_test`, and a separate Compose `test` profile/volume.
 - Updated the API reference, README, and this journal.
 
-**Test-first record:** The comment service Jest tests were written before the service implementation. The initial run failed with TypeScript `TS2307` because `comments.service.ts` did not exist. After implementation, the tests passed, including customer internal-comment denial, scoped list delegation, authenticated agent author identity, and missing-ticket propagation.
+Test-first history and verification outcomes are recorded separately in [test-results.md](./test-results.md).
 
-**Baseline before the remaining Day 11 work:** The existing API suite had 33 passing Node tests and 0 failures.
+## Week 2 Day 14 — Ticket screens
 
-**Verification (actual results):**
-- `npm test`: passed; 33 existing Node tests and 18 Jest tests.
-- `npm run test:coverage`: passed; service coverage 97.61% statements/lines, 91.66% functions, 100% branches.
-- `npm run build`: passed.
-- `docker compose --profile test config --quiet`: passed.
-- Browser check of `http://localhost:3107/docs/`: Swagger UI rendered with Health, Authentication, Tickets, Comments, and schemas.
-- `npm run test:integration`: not run because `TEST_DATABASE_URL` is not configured. Docker Desktop's PostgreSQL daemon is unavailable in this environment; the runner refused to fall back to the development database.
+**Prompt/context:** Build the ticket list, detail, create, status-update, and comment experience in the existing React application. Follow the actual API schemas and permissions, use the existing TanStack Query setup, keep API calls out of presentational components, and support URL-backed list filters.
 
-**Remaining verification:** Start the dedicated `postgres-test` Compose profile, configure the local `TEST_DATABASE_URL` from `.env.example`, then rerun `npm run test:integration`. No migration or database integration result is claimed yet.
+**Summary of the implementation:** Added a ticket creation page and detail page, linked tickets from the list, added staff-only status controls and internal-comment creation, and added public/internal comment rendering. List search, status, priority, assignee, sorting, and pagination are reflected in supported URL query parameters. The web form uses the API's canonical Zod schemas rather than maintaining copies.
+
+**What changed and why:**
+- Added ticket detail/create/comment API functions and TanStack Query hooks with query keys and mutation invalidation.
+- Added React Hook Form validation, field-level server validation messages, loading/error states, and a creation confirmation on the new ticket's detail page.
+- Kept customer internal comments hidden in the UI as well as relying on the API's role-scoped response; only agents/admins see status controls or the internal-note checkbox.
+- Cleared the query cache on login and logout so ticket data from a previous user is not retained across account changes.
+- Added responsive layout styles and focused ticket API/query-parameter tests.
+
+Verification notes, test outputs, and manual browser evidence are kept separately in [test-results.md](./test-results.md).
+
+## Week 3 — Day 2 (Day 14): Ticket Screens End to End
+
+**Prompt:

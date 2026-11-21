@@ -128,3 +128,44 @@ test("auth routes validate login input and ticket routes reject anonymous reques
     });
   }
 });
+
+test("password reset endpoints are disabled outside local development", async () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+
+  const app = express();
+  app.use(express.json());
+  app.use("/api/auth", authRouter);
+  app.use(errorHandler);
+  const { server, baseUrl } = await listen(app);
+
+  try {
+    const request = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "customer@example.test" }),
+    });
+    assert.equal(request.status, 503);
+    assert.deepEqual(await request.json(), {
+      data: null,
+      error: {
+        code: "PASSWORD_RESET_UNAVAILABLE",
+        message: "Password reset is available only in local development until email delivery is configured.",
+      },
+      meta: {},
+    });
+
+    const reset = await fetch(`${baseUrl}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token: "a".repeat(64), password: "new-password-123" }),
+    });
+    assert.equal(reset.status, 503);
+  } finally {
+    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = originalNodeEnv;
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => error ? reject(error) : resolve());
+    });
+  }
+});

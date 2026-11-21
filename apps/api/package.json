@@ -12,7 +12,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "test": "npm run test:node && npm run test:unit",
-    "test:node": "node --import tsx --import ./src/tests/node-test.setup.ts --test src/importTickets.test.ts src/tests/ticketId.test.ts src/tests/csvToJson.test.ts src/tests/sampleTickets.test.ts src/tests/auth.test.ts src/tests/security-middleware.test.ts src/tests/request-logger.test.ts src/tests/error-handler.test.ts",
+    "test:node": "node --import tsx --import ./src/tests/node-test.setup.ts --test src/importTickets.test.ts src/tests/ticketId.test.ts src/tests/csvToJson.test.ts src/tests/sampleTickets.test.ts src/tests/auth.test.ts src/tests/password-reset.test.ts src/tests/security-middleware.test.ts src/tests/request-logger.test.ts src/tests/error-handler.test.ts",
     "test:unit": "jest --config jest.config.cjs --runInBand",
     "test:coverage": "jest --config jest.config.cjs --runInBand --coverage",
     "test:integration": "tsx src/tests/run-integration.ts"

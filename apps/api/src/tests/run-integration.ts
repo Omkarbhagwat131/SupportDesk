@@ -38,6 +38,8 @@ const integrationResult = spawnSync(process.execPath, [
   "tsx",
   "--test",
   resolve(__dirname, "comments.integration.test.ts"),
+  resolve(__dirname, "password-reset.integration.test.ts"),
+  resolve(__dirname, "ticket-workflow.integration.test.ts"),
 ], {
   cwd: apiRoot,
   env: process.env,

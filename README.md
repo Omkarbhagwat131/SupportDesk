@@ -72,6 +72,8 @@ npm run db:studio --prefix apps/api
 
 The API provides `POST /api/auth/register` and `POST /api/auth/login`. Registration stores a bcrypt password hash; login returns a bearer token. Set `JWT_SECRET` in the local `.env` to a unique, random value of at least 32 bytes before starting the API. `JWT_EXPIRES_IN` accepts a duration such as `1d` and cannot exceed 30 days.
 
+The login page includes a **Forgot your password?** flow for local development. It stores a hash of a random, one-time reset token, valid for 30 minutes, and prints the reset link to the API terminal. Apply the password-reset database migration with `npm run db:migrate --prefix apps/api` and regenerate Prisma Client with `npm run prisma:generate --prefix apps/api`. Reset requests are rate limited and return the same response whether or not an account exists. This local-only flow is disabled outside `NODE_ENV=development`; configure an email provider before enabling password recovery in a deployed environment.
+
 Ticket routes require `Authorization: Bearer <token>`. Customers can list and retrieve only tickets linked to their user account and create tickets for their own account. Agents and admins can access all tickets; only agents and admins can update or delete tickets. Existing imported tickets with no verified requester link are not visible to customers.
 
 `GET /api/tickets` supports pagination (`page`, `limit`, maximum 100), status, priority, assignee, text search, and allowlisted sorting. The `meta` envelope returns `page`, `limit`, `total`, and `totalPages`. Customers can create/list public comments only on their own tickets; agents and admins can create/list public and internal comments. Internal comments are never returned to customers.
@@ -83,6 +85,17 @@ Helmet security headers are enabled. Browser requests are allowed only from orig
 For example, in Postman register with `POST http://localhost:3000/api/auth/register`, then log in with `POST http://localhost:3000/api/auth/login`. Use the returned token via **Authorization → Bearer Token** when calling `http://localhost:3000/api/tickets`.
 
 The [Day 10 authentication results](./postman/documents/day-10-auth-results.md) record expected and observed local API responses.
+
+## Web dashboard
+
+From the repository root, start the React web app with:
+
+```powershell
+npm install --prefix apps/web
+npm run dev --prefix apps/web
+```
+
+The dashboard is available at `http://localhost:5173` and uses `VITE_API_URL` for the API base URL. Copy [`apps/web/.env.example`](./apps/web/.env.example) to `apps/web/.env` if you need to override the default `http://localhost:3000` API URL.
 
 ### Isolated integration tests
 
