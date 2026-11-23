@@ -58,3 +58,25 @@ Recorded on 16 November 2026.
 - Project-lead approval of ticket status-transition rules.
 
 The initial Day 14 smoke check was unable to connect to the local page; the later browser workflow above succeeded. Earlier results are retained as historical records and are not substitutes for the later checks.
+
+## 23 November 2026 — Week 3 Day 3 (Day 15): UI quality
+
+### Automated checks
+
+- `npm test --prefix apps/web`: passed, 13 test files and 28 tests.
+- `npm run build --prefix apps/web`: passed; `tsc -b` and Vite production build completed.
+- `npm run lint --prefix apps/web`: passed.
+
+### Implementation evidence
+
+- Added typed reusable `Button`, `Input`, `Badge`, `Modal`, and `Table` components under `apps/web/src/components/ui/`.
+- Migrated ticket filters, ticket table, ticket status/priority badges, ticket creation, comments, pagination, and layout logout to shared primitives.
+- Preserved customer, agent, and admin controls; no backend authorization or API contract changed.
+- Added narrow-screen table scrolling and modal, form, and table CSS; 360 px has intentional horizontal table scrolling inside the table region instead of page overflow.
+
+### Manual and audit blockers
+
+- The frontend development server rendered the ticket list and create-ticket form.
+- The API was not running, so detail data, real ticket mutations, and API-backed manual workflows could not be verified.
+- Lighthouse was not installed or configured in the existing project. No score is claimed. Two representative routes need a running API and a valid Lighthouse browser run before ≥90 acceptance evidence can be recorded.
+- A screenshot/wireframe-assisted component exercise is documented in [prompt-journal.md](./prompt-journal.md); it used synthetic data and a text wireframe only.

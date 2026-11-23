@@ -1,4 +1,5 @@
 import type { TicketListQuery, TicketPriority, TicketStatus } from "../api/tickets";
+import { Input } from "../../../components/ui/Input";
 
 type Props = {
   value: TicketListQuery;
@@ -8,15 +9,17 @@ type Props = {
 export function TicketFilters({ value, onChange }: Props) {
   return (
     <div className="filters">
-      <input
+      <Input
         aria-label="Search tickets"
+        label="Search tickets"
         type="search"
         placeholder="Search tickets..."
         value={value.search ?? ""}
         onChange={(event) => onChange({ ...value, search: event.target.value, page: 1 })}
       />
-      <input
+      <Input
         aria-label="Filter by assignee ID"
+        label="Assignee ID"
         placeholder="Assignee ID"
         value={value.assigneeId ?? ""}
         onChange={(event) => onChange({ ...value, assigneeId: event.target.value, page: 1 })}

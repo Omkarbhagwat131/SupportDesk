@@ -185,6 +185,41 @@ td time { color: #687286; font-size: 13px; white-space: nowrap; }
 .button.secondary { color: #344054; background: #fff; border-color: #d5dae3; }
 .button.secondary:hover:not(:disabled) { background: #f8faff; border-color: #c3cee4; }
 .button:disabled { opacity: .55; cursor: not-allowed; }
+.button.danger { color: #fff; background: #b42318; border-color: #b42318; }
+.button.danger:hover:not(:disabled) { background: #912018; }
+.button.text { min-height: 36px; padding: 6px 8px; color: var(--brand-dark); background: transparent; }
+.button.text:hover:not(:disabled) { background: #f2f0ff; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+.ui-field { display: grid; gap: 7px; min-width: 0; }
+.ui-field label { color: #344054; font-size: 13px; font-weight: 700; }
+.required-marker { color: #b42318; }
+.ui-input { min-height: 44px; }
+.ui-input-error { border-color: #d92d20 !important; box-shadow: 0 0 0 3px rgba(217, 45, 32, .12) !important; }
+.field-helper { color: #667085; font-size: 12px; }
+.badge-neutral { color: #596174; background: #eceef2; }
+.ui-modal {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(23, 32, 51, .28);
+}
+.ui-modal::backdrop { background: rgba(23, 32, 51, .55); }
+.ui-modal-panel { display: grid; gap: 16px; padding: 22px; }
+.ui-modal-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ui-modal-heading h2 { margin: 0; font-size: 20px; }
+.ui-modal-description { margin: 0; color: #667085; line-height: 1.55; }
+.ui-modal-content { min-width: 0; }
+.ui-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .skip-link {
   position: absolute;
   z-index: 1;
@@ -340,6 +375,15 @@ td time { color: #687286; font-size: 13px; white-space: nowrap; }
   .status-summary-row { grid-template-columns: minmax(100px, .8fr) minmax(40px, 1fr) 20px; gap: 7px; }
   .section-heading { align-items: start; flex-direction: column; }
   .status-control { width: 100%; }
+  .ticket-page-actions { flex-wrap: wrap; }
+  .ticket-form { padding: 16px; }
+  .comment-card p { margin-left: 0; }
+  .comment-meta { gap: 6px; }
+  .table-wrap { width: 100%; }
+  table { min-width: 680px; }
+  .ui-modal-actions { flex-direction: column-reverse; }
+  .ui-modal-actions .button { width: 100%; }
+  .page-heading h1 { overflow-wrap: anywhere; }
 }
 @media (max-width: 720px) {
   .app-shell { display: block; }

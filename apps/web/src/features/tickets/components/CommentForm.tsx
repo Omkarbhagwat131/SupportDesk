@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { createCommentSchema, type CreateCommentInput } from "../schemas";
 import { useCreateComment } from "../hooks/useTicketMutations";
+import { Button } from "../../../components/ui/Button";
 
 type CommentFormValues = z.input<typeof createCommentSchema>;
 
@@ -57,9 +58,9 @@ export function CommentForm({
         </label>
       )}
       {formError && <div className="form-error" role="alert">{formError}</div>}
-      <button className="button primary" type="submit" disabled={isSubmitting || mutation.isPending}>
+      <Button type="submit" loading={isSubmitting || mutation.isPending}>
         {isSubmitting || mutation.isPending ? "Adding comment…" : "Add comment"}
-      </button>
+      </Button>
     </form>
   );
 }

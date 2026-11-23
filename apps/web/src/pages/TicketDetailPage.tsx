@@ -10,6 +10,7 @@ import { ticketStatusOptions } from "../features/tickets/status";
 import { ApiRequestError } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import type { TicketStatus } from "../features/tickets/api/tickets";
+import { Badge } from "../components/ui/Badge";
 
 function getTicketLoadError(error: unknown): string {
   if (error instanceof ApiRequestError && error.status === 404) {
@@ -92,7 +93,7 @@ export function TicketDetailPage() {
       <article className="ticket-detail-card">
         <div className="ticket-detail-badges">
           <TicketStatusBadge status={ticket.status} />
-          <span className={`badge priority-${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
+          <Badge type="priority" value={ticket.priority} />
         </div>
         <dl className="ticket-metadata">
           <div><dt>Requester</dt><dd>{ticket.requesterEmail}</dd></div>
