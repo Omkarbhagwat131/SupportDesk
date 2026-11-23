@@ -80,3 +80,61 @@ The initial Day 14 smoke check was unable to connect to the local page; the late
 - The API was not running, so detail data, real ticket mutations, and API-backed manual workflows could not be verified.
 - Lighthouse was not installed or configured in the existing project. No score is claimed. Two representative routes need a running API and a valid Lighthouse browser run before ≥90 acceptance evidence can be recorded.
 - A screenshot/wireframe-assisted component exercise is documented in [prompt-journal.md](./prompt-journal.md); it used synthetic data and a text wireframe only.
+
+## 23 November 2026 — Final Day 15 verification
+
+### Live workflow verification
+
+- Started the development PostgreSQL container, applied migrations, generated Prisma Client, and seeded 50 sample tickets.
+- Started the API and frontend successfully.
+- Registered and logged in with a synthetic customer account only for local verification.
+- Created ticket `4e01c6bb-ffcf-457b-889f-53f0d7020753`.
+- Added a synthetic public comment and verified it rendered on the ticket detail page.
+- Verified the customer sees the created ticket in the ticket list and that the requester email is readonly on creation.
+- The API-backed ticket detail/comment workflow passed at 360 px, 768 px, and 1280 px with no page-level horizontal overflow.
+
+### Lighthouse accessibility audits
+
+- Route: `http://localhost:5173/login`
+  - Device: Lighthouse mobile-style headless Chrome audit
+  - Accessibility score: **95**
+  - Failing binary accessibility audits: none
+- Route: `http://localhost:5173/register`
+  - Device: Lighthouse mobile-style headless Chrome audit
+  - Accessibility score: **100**
+  - Failing binary accessibility audits: none
+- Reports: `C:\Users\Omkar\.copilot\session-state\8fabd58f-8b22-44dc-84b8-89f2ef31c547\files\lighthouse\login.json`
+- Reports: `C:\Users\Omkar\.copilot\session-state\8fabd58f-8b22-44dc-84b8-89f2ef31c547\files\lighthouse\register.json`
+
+### Day 14/15 regression
+
+- `npm run test:integration --prefix apps/api`: 11 passed, 0 failed.
+- The suite verified customer ticket creation, agent status/comment updates, customer/internal comment restrictions, public comment behavior, and authentication.
+- The synthetic verification records should be removed from the development database after browser evidence is complete.
+
+## Day 15 EOD report
+
+Date: Monday, 23 November 2026
+Project: SupportDesk
+Roadmap task: Week 3 — Day 3 (Day 15): UI Quality + Frontend Clean Code
+
+Completed:
+- Reusable components: `Button`, `Input`, `Badge`, `Modal`, and `Table`.
+- Screens updated: ticket list, ticket detail, create-ticket form, comments, filters, pagination, and layout controls.
+- Responsive checks: ticket list/detail/create form checked at 360 px, 768 px, and 1280 px.
+- Accessibility fixes: labels, required-state/error associations, semantic table caption/headers, native modal/dialog behavior, and visible focus convention retained.
+- Lighthouse page 1 (`/login`): 95.
+- Lighthouse page 2 (`/register`): 100.
+- Tests/build: frontend 28/28 tests passed, lint passed, production build passed; API integration suite 11/11 passed.
+
+AI exercise:
+- Component: status badge wireframe.
+- Prompt Journal entry: recorded in `docs/prompt-journal.md`.
+- Incorrect AI assumptions: generic CSS/status mappings and browser-DOM assumptions.
+- Refactor: reused existing API status/priority types and CSS conventions, and used server-rendering tests matching the existing Vitest setup.
+
+Pending / blockers:
+- PR submission remains the repository handoff action.
+
+Term of the day: UAT — User Acceptance Testing
+Overall status: Done
