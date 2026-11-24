@@ -11,10 +11,13 @@ const marker = `workflow-${process.pid}-${randomUUID()}`;
 const customerEmail = `${marker}-customer@example.test`;
 const agentEmail = `${marker}-agent@example.test`;
 const agentId = `${marker}-agent`;
+const adminEmail = `${marker}-admin@example.test`;
+const adminId = `${marker}-admin`;
 const ticketIds: string[] = [];
 let customerId: string | null = null;
 let customerToken = "";
 let agentToken = "";
+let adminToken = "";
 
 before(async () => {
   const agentPassword = "agent-password-123";
@@ -25,6 +28,15 @@ before(async () => {
       email: agentEmail,
       passwordHash: await bcrypt.hash(agentPassword, 12),
       role: UserRole.AGENT,
+    },
+  });
+  await prisma.user.create({
+    data: {
+      id: adminId,
+      name: "Workflow Test Admin",
+      email: adminEmail,
+      passwordHash: await bcrypt.hash("admin-password-123", 12),
+      role: UserRole.ADMIN,
     },
   });
 
@@ -45,6 +57,12 @@ before(async () => {
     .send({ email: agentEmail, password: agentPassword });
   assert.equal(agentLogin.status, 200);
   agentToken = agentLogin.body.data.token;
+
+  const adminLogin = await request(app)
+    .post("/api/auth/login")
+    .send({ email: adminEmail, password: "admin-password-123" });
+  assert.equal(adminLogin.status, 200);
+  adminToken = adminLogin.body.data.token;
 });
 
 after(async () => {
@@ -54,7 +72,7 @@ after(async () => {
       await prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } });
     }
     await prisma.user.deleteMany({
-      where: { id: { in: customerId ? [customerId, agentId] : [agentId] } },
+      where: { id: { in: customerId ? [customerId, agentId, adminId] : [agentId, adminId] } },
     });
   } finally {
     await prisma.$disconnect();
@@ -62,6 +80,16 @@ after(async () => {
 });
 
 test("customer creates a ticket and an agent comments and updates its status", async () => {
+  const agentCreate = await request(app)
+    .post("/api/tickets")
+    .set("Authorization", `Bearer ${agentToken}`)
+    .send({
+      subject: `${marker} agent-created`,
+      requesterEmail: agentEmail,
+      description: "Staff should not create customer tickets.",
+    });
+  assert.equal(agentCreate.status, 403);
+
   const created = await request(app)
     .post("/api/tickets")
     .set("Authorization", `Bearer ${customerToken}`)
@@ -75,6 +103,46 @@ test("customer creates a ticket and an agent comments and updates its status", a
   const ticketId = created.body.data.id as string;
   ticketIds.push(ticketId);
   assert.equal(created.body.data.requesterId, customerId);
+
+  const adminAgents = await request(app)
+    .get("/api/users/agents")
+    .set("Authorization", `Bearer ${adminToken}`);
+  assert.equal(adminAgents.status, 200);
+  const listedAgent = adminAgents.body.data.find((entry: { id: string }) => entry.id === agentId);
+  assert.ok(listedAgent);
+  assert.equal(listedAgent.email, agentEmail);
+  assert.equal("passwordHash" in listedAgent, false);
+
+  const assigned = await request(app)
+    .put(`/api/tickets/${ticketId}`)
+    .set("Authorization", `Bearer ${adminToken}`)
+    .send({ assigneeId: agentId });
+  assert.equal(assigned.status, 200);
+  assert.equal(assigned.body.data.assigneeId, agentId);
+
+  const agentReassign = await request(app)
+    .put(`/api/tickets/${ticketId}`)
+    .set("Authorization", `Bearer ${agentToken}`)
+    .send({ assigneeId: null });
+  assert.equal(agentReassign.status, 403);
+
+  const adminCategory = await request(app)
+    .put(`/api/tickets/${ticketId}`)
+    .set("Authorization", `Bearer ${adminToken}`)
+    .send({ category: "account" });
+  assert.equal(adminCategory.status, 200);
+  assert.equal(adminCategory.body.data.category, "account");
+
+  const adminComment = await request(app)
+    .post(`/api/tickets/${ticketId}/comments`)
+    .set("Authorization", `Bearer ${adminToken}`)
+    .send({ body: "Admin comments are disabled." });
+  assert.equal(adminComment.status, 403);
+
+  const adminReplySuggestion = await request(app)
+    .post(`/api/tickets/${ticketId}/suggest-reply`)
+    .set("Authorization", `Bearer ${adminToken}`);
+  assert.equal(adminReplySuggestion.status, 403);
 
   const agentTickets = await request(app)
     .get("/api/tickets")

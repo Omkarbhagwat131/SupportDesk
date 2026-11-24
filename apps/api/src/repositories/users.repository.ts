@@ -1,5 +1,6 @@
 import { prisma } from "../config/database";
 import { AppError } from "../errors/app-error";
+import { UserRole } from "../generated/prisma/client";
 
 function isPrismaUniqueConstraintError(error: unknown): boolean {
   return typeof error === "object"
@@ -44,5 +45,20 @@ export function findAuthUserById(id: string) {
   return prisma.user.findUnique({
     where: { id },
     select: { id: true, email: true, role: true },
+  });
+}
+
+export function findAgents() {
+  return prisma.user.findMany({
+    where: { role: UserRole.AGENT },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export function findAgentById(id: string) {
+  return prisma.user.findFirst({
+    where: { id, role: UserRole.AGENT },
+    select: { id: true },
   });
 }

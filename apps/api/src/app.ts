@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from "./middlewares/error-handler";
 import { requestLogger } from "./middlewares/request-logger";
 import authRouter from "./routes/auth.routes";
 import ticketsRouter from "./routes/tickets.routes";
+import usersRouter from "./routes/users.routes";
 import { sendSuccess } from "./utils/api-response";
 
 const openApiDocument = JSON.parse(readFileSync(resolve(__dirname, "../openapi.json"), "utf8"));
@@ -20,6 +21,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => sendSuccess(res, 200, { status: "ok" }));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 app.use("/api/auth", authRouter);
+app.use("/api/users", usersRouter);
 app.use("/api/tickets", ticketsRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);

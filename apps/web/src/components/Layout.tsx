@@ -8,7 +8,7 @@ export function Layout() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const user = getStoredUser();
-  const canCreateTicket = user?.role !== "ADMIN";
+  const canCreateTicket = user?.role === "CUSTOMER";
 
   function logout() {
     queryClient.clear();

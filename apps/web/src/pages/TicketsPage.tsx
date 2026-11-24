@@ -10,7 +10,7 @@ import { Button } from "../components/ui/Button";
 
 export function TicketsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const canCreateTicket = getStoredUser()?.role !== "ADMIN";
+  const canCreateTicket = getStoredUser()?.role === "CUSTOMER";
   const search = searchParams.toString();
   const query = useMemo(() => parseTicketListQuery(search), [search]);
   const hasActiveFilters = Boolean(
