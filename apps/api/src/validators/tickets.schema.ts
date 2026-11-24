@@ -20,6 +20,8 @@ export const updateTicketSchema = z.object({
   subject: ticketFields.subject.optional(),
   requesterEmail: ticketFields.requesterEmail.optional(),
   description: ticketFields.description.optional(),
+  category: z.string().trim().min(1).max(100).nullable().optional(),
+  assigneeId: z.string().trim().min(1).max(100).nullable().optional(),
   priority: ticketFields.priority.optional(),
   status: ticketFields.status.optional(),
 }).refine((ticket) => Object.keys(ticket).length > 0, {

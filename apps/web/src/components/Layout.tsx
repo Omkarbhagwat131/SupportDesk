@@ -1,13 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clearAuth, getStoredUser } from "../lib/auth";
+import { Button } from "./ui/Button";
 
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const user = getStoredUser();
-  const canCreateTicket = user?.role !== "ADMIN";
+  const canCreateTicket = user?.role === "CUSTOMER";
 
   function logout() {
     queryClient.clear();
@@ -52,9 +53,9 @@ export function Layout() {
             <strong>{user?.name}</strong>
             <small>{user?.role?.toLowerCase()}</small>
           </span>
-          <button type="button" className="logout-button" onClick={logout} aria-label="Log out" title="Log out">
+          <Button type="button" variant="text" className="logout-button" onClick={logout} aria-label="Log out" title="Log out">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10m4-4 4-4-4-4m4 4H9" /></svg>
-          </button>
+          </Button>
         </div>
       </aside>
       <div className="workspace">

@@ -6,10 +6,11 @@ import { useTickets } from "../features/tickets/hooks/useTickets";
 import type { TicketListQuery } from "../features/tickets/api/tickets";
 import { parseTicketListQuery, serializeTicketListQuery } from "../features/tickets/queryParams";
 import { getStoredUser } from "../lib/auth";
+import { Button } from "../components/ui/Button";
 
 export function TicketsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const canCreateTicket = getStoredUser()?.role !== "ADMIN";
+  const canCreateTicket = getStoredUser()?.role === "CUSTOMER";
   const search = searchParams.toString();
   const query = useMemo(() => parseTicketListQuery(search), [search]);
   const hasActiveFilters = Boolean(
@@ -57,9 +58,9 @@ export function TicketsPage() {
       )}
       {!loading && meta.totalPages > 1 && (
         <div className="pagination">
-          <button className="button secondary" type="button" disabled={query.page <= 1} onClick={() => updateQuery({ ...query, page: query.page - 1 })}>Previous</button>
+          <Button variant="secondary" disabled={query.page <= 1} onClick={() => updateQuery({ ...query, page: query.page - 1 })}>Previous</Button>
           <span>Page {meta.page} of {meta.totalPages}</span>
-          <button className="button secondary" type="button" disabled={query.page >= meta.totalPages} onClick={() => updateQuery({ ...query, page: query.page + 1 })}>Next</button>
+          <Button variant="secondary" disabled={query.page >= meta.totalPages} onClick={() => updateQuery({ ...query, page: query.page + 1 })}>Next</Button>
         </div>
       )}
     </section>

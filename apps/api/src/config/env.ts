@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 config({ path: resolve(__dirname, "../../../../.env") });
 
-const DEFAULT_CORS_ORIGINS = ["http://localhost:5173"];
+const DEFAULT_CORS_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"];
 const MAX_JWT_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
 
 function parseCorsOrigins(value: string | undefined): string[] {
@@ -67,6 +67,17 @@ export function validateEnv(environment: NodeJS.ProcessEnv) {
   const port = Number(environment.PORT ?? 3000);
   const databaseUrl = environment.DATABASE_URL;
   const jwtSecret = environment.JWT_SECRET;
+  const geminiKeyValue = environment.GEMINI_API_KEY;
+  const geminiKey = geminiKeyValue?.trim() || null;
+  const geminiModel = environment.GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
+  const geminiInputCostPerMillion = parseOptionalCost(
+    environment.GEMINI_INPUT_COST_PER_1M_TOKENS,
+    "GEMINI_INPUT_COST_PER_1M_TOKENS",
+  );
+  const geminiOutputCostPerMillion = parseOptionalCost(
+    environment.GEMINI_OUTPUT_COST_PER_1M_TOKENS,
+    "GEMINI_OUTPUT_COST_PER_1M_TOKENS",
+  );
   const corsOrigins = parseCorsOrigins(environment.CORS_ORIGINS);
   const jwtExpiresInSeconds = parseJwtLifetime(environment.JWT_EXPIRES_IN);
 
@@ -82,7 +93,38 @@ export function validateEnv(environment: NodeJS.ProcessEnv) {
     throw new Error("JWT_SECRET must be set to a non-placeholder value of at least 32 bytes.");
   }
 
-  return { port, databaseUrl, jwtSecret, corsOrigins, jwtExpiresInSeconds };
+  if (
+    geminiKey !== null && (geminiKey.length < 20 || /placeholder/i.test(geminiKey))
+  ) {
+    throw new Error("GEMINI_API_KEY must be a non-placeholder API key when configured.");
+  }
+
+  if (geminiModel.length === 0 || geminiModel.length > 100 || /[\s\0-\x1f]/.test(geminiModel)) {
+    throw new Error("GEMINI_MODEL must be a non-empty model identifier without whitespace.");
+  }
+
+  return {
+    port,
+    databaseUrl,
+    jwtSecret,
+    corsOrigins,
+    jwtExpiresInSeconds,
+    gemini: {
+      apiKey: geminiKey,
+      model: geminiModel,
+      inputCostPerMillion: geminiInputCostPerMillion,
+      outputCostPerMillion: geminiOutputCostPerMillion,
+    },
+  };
+}
+
+function parseOptionalCost(value: string | undefined, name: string): number | null {
+  if (value === undefined || value.trim() === "") return null;
+  const cost = Number(value);
+  if (!Number.isFinite(cost) || cost < 0) {
+    throw new Error(`${name} must be a non-negative number.`);
+  }
+  return cost;
 }
 
 export const env = validateEnv(process.env);

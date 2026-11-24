@@ -70,7 +70,53 @@ test("environment validation requires a strong non-placeholder JWT secret", () =
     JWT_SECRET: testSecret,
   };
   assert.equal(validateEnv(validEnvironment).jwtSecret, testSecret);
-  assert.deepEqual(validateEnv(validEnvironment).corsOrigins, ["http://localhost:5173"]);
+  assert.deepEqual(validateEnv(validEnvironment).corsOrigins, [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ]);
+  assert.deepEqual(validateEnv(validEnvironment).gemini, {
+    apiKey: null,
+    model: "gemini-3.5-flash-lite",
+    inputCostPerMillion: null,
+    outputCostPerMillion: null,
+  });
+  assert.deepEqual(validateEnv({
+    ...validEnvironment,
+    GEMINI_API_KEY: "   ",
+  }).gemini.apiKey, null);
+  assert.deepEqual(validateEnv({
+    ...validEnvironment,
+    GEMINI_API_KEY: "test-gemini-key-with-sufficient-length",
+    GEMINI_MODEL: "gemini-test-model",
+    GEMINI_INPUT_COST_PER_1M_TOKENS: "0.15",
+    GEMINI_OUTPUT_COST_PER_1M_TOKENS: "0.6",
+  }).gemini, {
+    apiKey: "test-gemini-key-with-sufficient-length",
+    model: "gemini-test-model",
+    inputCostPerMillion: 0.15,
+    outputCostPerMillion: 0.6,
+  });
+  assert.throws(() => validateEnv({
+    ...validEnvironment,
+    GEMINI_API_KEY: "gemini-placeholder-do-not-use",
+  }), /GEMINI_API_KEY/);
+  assert.throws(() => validateEnv({
+    ...validEnvironment,
+    GEMINI_MODEL: "invalid model",
+  }), /GEMINI_MODEL/);
+  assert.equal(validateEnv({
+    ...validEnvironment,
+    GEMINI_API_KEY: "test-gemini-key-with-sufficient-length",
+    GEMINI_INPUT_COST_PER_1M_TOKENS: "0.15",
+  }).gemini.inputCostPerMillion, 0.15);
+  assert.equal(validateEnv({
+    ...validEnvironment,
+    GEMINI_API_KEY: "test-gemini-key-with-sufficient-length",
+  }).gemini.outputCostPerMillion, null);
+  assert.throws(() => validateEnv({
+    ...validEnvironment,
+    GEMINI_INPUT_COST_PER_1M_TOKENS: "-1",
+  }), /GEMINI_INPUT_COST_PER_1M_TOKENS/);
   assert.equal(validateEnv({
     ...validEnvironment,
     CORS_ORIGINS: "https://support.example.test, https://admin.example.test",

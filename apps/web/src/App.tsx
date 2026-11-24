@@ -14,6 +14,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return getStoredUser() ? children : <Navigate to="/login" replace />;
 }
 
+function CustomerRoute({ children }: { children: React.ReactNode }) {
+  return getStoredUser()?.role === "CUSTOMER" ? children : <Navigate to="/tickets" replace />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -31,7 +35,7 @@ export default function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="tickets" element={<TicketsPage />} />
-        <Route path="tickets/new" element={<CreateTicketPage />} />
+        <Route path="tickets/new" element={<CustomerRoute><CreateTicketPage /></CustomerRoute>} />
         <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

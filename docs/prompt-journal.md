@@ -181,3 +181,19 @@ Verification notes, test outputs, and manual browser evidence are kept separatel
 ## Week 3 — Day 2 (Day 14): Ticket Screens End to End
 
 **Prompt:
+
+## 23 November 2026 — Week 3 Day 3 (Day 15): UI Quality and Clean Code
+
+**Prompt/context:** Improve the existing SupportDesk frontend by extracting reusable typed UI components, refactoring ticket screens, preserving role behavior and workflows, improving narrow-screen usability, and documenting verification evidence. The lead did not approve adding Tailwind or a component library.
+
+**Project-safe exercise input:** A text wireframe for a ticket status badge was used rather than a customer-data screenshot: a compact pill with status text, status variant, and sufficient text contrast. The supplied prompt requested inspection of the existing React/TypeScript patterns and no new API fields or business behavior.
+
+**Summary of the AI output:** Proposed one `Badge` component with status and priority variants, plus separate shared `Button`, `Input`, `Modal`, and `Table` primitives and focused tests.
+
+**What the AI got wrong initially:** It proposed generic class names and a status mapping that would not match the existing CSS contract. It also suggested browser-DOM testing despite the project's node-based Vitest setup.
+
+**What changed and why:** Implemented project-local primitives in `apps/web/src/components/ui/` and reused existing ticket status/priority values and CSS conventions. Static server rendering tests match the current Vitest environment. `Modal` uses the native `<dialog>` API for focus containment and Escape handling. It was not inserted into a nonexistent destructive-action workflow, because that would invent UI/business behavior.
+
+**Verification:** The frontend test suite passed 28 tests across 13 files, lint passed, and the production build passed. The API was unavailable during browser verification, and Lighthouse CLI evidence could not be obtained because no Lighthouse configuration or audit run was available in the existing project; this remains a blocker rather than a claimed score.
+
+**Final verification update:** The API and development database were started, migrations/seed completed, and a synthetic customer created and tested a ticket/comment workflow. Lighthouse accessibility audits of login and register passed with scores of 95 and 100. The API integration suite passed 11 of 11 tests. Final verification was not blocked by missing infrastructure.

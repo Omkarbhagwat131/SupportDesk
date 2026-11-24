@@ -6,6 +6,8 @@ import { ApiRequestError } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import { useCreateTicket } from "../features/tickets/hooks/useTicketMutations";
 import { createTicketSchema, type CreateTicketInput } from "../features/tickets/schemas";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 const ticketFieldNames = ["subject", "requesterEmail", "description"] as const;
 type TicketFieldName = (typeof ticketFieldNames)[number];
@@ -81,28 +83,26 @@ export function CreateTicketPage() {
       </div>
 
       <form className="ticket-form" onSubmit={handleSubmit(submit)} aria-busy={submitting}>
-        <label htmlFor="ticket-subject">Subject</label>
-        <input
+        <Input
           id="ticket-subject"
+          label="Subject"
+          required
           autoComplete="off"
           aria-invalid={Boolean(errors.subject)}
-          aria-describedby={errors.subject ? "ticket-subject-error" : undefined}
+          error={errors.subject?.message}
           {...register("subject")}
         />
-        {errors.subject && <span id="ticket-subject-error" className="field-error" role="alert">{errors.subject.message}</span>}
-
-        <label htmlFor="ticket-requester-email">Requester email</label>
-        <input
+        <Input
           id="ticket-requester-email"
+          label="Requester email"
+          required
           type="email"
           autoComplete="email"
           readOnly={user?.role === "CUSTOMER"}
           aria-invalid={Boolean(errors.requesterEmail)}
-          aria-describedby={errors.requesterEmail ? "ticket-requester-email-error" : undefined}
+          error={errors.requesterEmail?.message}
           {...register("requesterEmail")}
         />
-        {errors.requesterEmail && <span id="ticket-requester-email-error" className="field-error" role="alert">{errors.requesterEmail.message}</span>}
-
         <label htmlFor="ticket-description">Description</label>
         <textarea
           id="ticket-description"
@@ -114,9 +114,9 @@ export function CreateTicketPage() {
         {errors.description && <span id="ticket-description-error" className="field-error" role="alert">{errors.description.message}</span>}
 
         {formError && <div className="form-error" role="alert">{formError}</div>}
-        <button className="button primary" type="submit" disabled={submitting}>
+        <Button type="submit" loading={submitting}>
           {submitting ? "Creating ticket…" : "Create ticket"}
-        </button>
+        </Button>
       </form>
     </section>
   );

@@ -25,9 +25,9 @@ function renderTicketsPage(role: "CUSTOMER" | "AGENT" | "ADMIN") {
 }
 
 describe("TicketsPage", () => {
-  it("hides ticket creation from admins and keeps it available to other roles", () => {
+  it("shows ticket creation only to customers", () => {
     expect(renderTicketsPage("ADMIN")).not.toContain("Create ticket");
-    expect(renderTicketsPage("AGENT")).toContain("Create ticket");
+    expect(renderTicketsPage("AGENT")).not.toContain("Create ticket");
     expect(renderTicketsPage("CUSTOMER")).toContain("Create ticket");
   });
 });

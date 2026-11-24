@@ -2,6 +2,7 @@ import { UserRole } from "../generated/prisma/client";
 import type { AuthenticatedUser } from "../types/auth";
 import type { ListTicketsQuery } from "../validators/tickets.schema";
 import * as ticketsRepository from "../repositories/tickets.repository";
+import * as usersRepository from "../repositories/users.repository";
 import * as ticketsService from "../services/tickets.service";
 
 jest.mock("../repositories/tickets.repository", () => ({
@@ -14,10 +15,26 @@ jest.mock("../repositories/tickets.repository", () => ({
   ticketListWhere: jest.fn(),
 }));
 
+jest.mock("../repositories/users.repository", () => ({
+  findAgentById: jest.fn(),
+}));
+
 const user: AuthenticatedUser = {
   id: "agent-1",
   email: "agent@example.test",
   role: UserRole.AGENT,
+};
+
+const customer: AuthenticatedUser = {
+  id: "customer-1",
+  email: "customer@example.test",
+  role: UserRole.CUSTOMER,
+};
+
+const admin: AuthenticatedUser = {
+  id: "admin-1",
+  email: "admin@example.test",
+  role: UserRole.ADMIN,
 };
 
 const query: ListTicketsQuery = {
@@ -69,8 +86,17 @@ describe("tickets service", () => {
     };
     jest.mocked(ticketsRepository.insertTicket).mockResolvedValue(ticket);
 
-    await expect(ticketsService.createTicket(input, user)).resolves.toEqual(ticket);
-    expect(ticketsRepository.insertTicket).toHaveBeenCalledWith(input, user);
+    await expect(ticketsService.createTicket(input, customer)).resolves.toEqual(ticket);
+    expect(ticketsRepository.insertTicket).toHaveBeenCalledWith(input, customer);
+  });
+
+  test("rejects ticket creation by staff", () => {
+    expect(() => ticketsService.createTicket({
+      subject: "New ticket",
+      requesterEmail: "customer@example.test",
+      description: "Help needed",
+    }, user)).toThrow("Only customers can create tickets.");
+    expect(ticketsRepository.insertTicket).not.toHaveBeenCalled();
   });
 
   test("passes updates to the repository", async () => {
@@ -79,6 +105,31 @@ describe("tickets service", () => {
 
     await expect(ticketsService.updateTicket(ticket.id, input, user)).resolves.toEqual(ticket);
     expect(ticketsRepository.saveTicketChanges).toHaveBeenCalledWith(ticket.id, input, user);
+  });
+
+  test("allows admins to assign tickets only to existing agents", async () => {
+    const input = { assigneeId: "agent-2" };
+    jest.mocked(usersRepository.findAgentById).mockResolvedValue({ id: "agent-2" });
+    jest.mocked(ticketsRepository.saveTicketChanges).mockResolvedValue(ticket);
+
+    await expect(ticketsService.updateTicket(ticket.id, input, admin)).resolves.toEqual(ticket);
+    expect(usersRepository.findAgentById).toHaveBeenCalledWith("agent-2");
+    expect(ticketsRepository.saveTicketChanges).toHaveBeenCalledWith(ticket.id, input, admin);
+  });
+
+  test("prevents agents from assigning tickets", async () => {
+    await expect(ticketsService.updateTicket(ticket.id, { assigneeId: "agent-2" }, user))
+      .rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    expect(usersRepository.findAgentById).not.toHaveBeenCalled();
+    expect(ticketsRepository.saveTicketChanges).not.toHaveBeenCalled();
+  });
+
+  test("rejects assigning a ticket to a non-agent user", async () => {
+    jest.mocked(usersRepository.findAgentById).mockResolvedValue(null);
+
+    await expect(ticketsService.updateTicket(ticket.id, { assigneeId: "customer-1" }, admin))
+      .rejects.toMatchObject({ statusCode: 400, code: "INVALID_ASSIGNEE" });
+    expect(ticketsRepository.saveTicketChanges).not.toHaveBeenCalled();
   });
 
   test("passes deletions to the repository", async () => {

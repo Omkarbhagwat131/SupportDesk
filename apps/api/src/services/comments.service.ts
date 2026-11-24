@@ -15,6 +15,9 @@ export function createCommentsService(repository: CommentsRepository = commentsR
       return repository.findCommentsByTicketId(ticketId, user);
     },
     async createComment(ticketId: string, input: CreateCommentInput, user: AuthenticatedUser) {
+      if (user.role === UserRole.ADMIN) {
+        throw new AppError(403, "FORBIDDEN", "Admins cannot add comments.");
+      }
       if (user.role === UserRole.CUSTOMER && input.isInternal) {
         throw new AppError(403, "FORBIDDEN", "Customers cannot create internal comments.");
       }

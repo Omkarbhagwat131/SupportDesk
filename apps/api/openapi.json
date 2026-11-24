@@ -11,6 +11,7 @@
   "tags": [
     { "name": "Health" },
     { "name": "Authentication" },
+    { "name": "Users" },
     { "name": "Tickets" },
     { "name": "Comments" }
   ],
@@ -188,6 +189,40 @@
         }
       }
     },
+    "/api/users/agents": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List agents for ticket assignment",
+        "description": "Admins only. Returns the safe profile fields needed to assign tickets.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Available agents.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AgentAssignmentOption" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
     "/api/tickets": {
       "get": {
         "tags": ["Tickets"],
@@ -230,7 +265,7 @@
       "post": {
         "tags": ["Tickets"],
         "summary": "Create a ticket",
-        "description": "Customers are linked to the authenticated user. Agents and admins may provide requester details.",
+        "description": "Customers only. The new ticket is linked to the authenticated customer.",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -245,6 +280,7 @@
           },
           "400": { "$ref": "#/components/responses/ValidationError" },
           "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
           "500": { "$ref": "#/components/responses/ServerError" }
         }
       }
@@ -268,7 +304,7 @@
       "put": {
         "tags": ["Tickets"],
         "summary": "Update a ticket",
-        "description": "Only agents and admins may update tickets.",
+        "description": "Agents and admins may update tickets. Only admins may assign tickets.",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -305,6 +341,74 @@
         }
       }
     },
+    "/api/tickets/{id}/suggest-reply": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }
+      ],
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Stream an AI-generated reply draft",
+        "description": "Agents receive a draft based on the ticket and its latest comments. The response is a server-sent event stream; the draft is never sent automatically.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Server-sent events containing delta, done, or error events.",
+            "content": {
+              "text/event-stream": {
+                "schema": { "type": "string" },
+                "examples": {
+                  "delta": { "value": "event: delta\ndata: {\"data\":\"Thanks for reaching out.\"}\n\n" },
+                  "done": { "value": "event: done\ndata: {\"data\":null}\n\n" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "description": "Ticket context is empty." },
+          "502": { "description": "The AI provider could not generate a reply." },
+          "503": { "description": "AI reply suggestions are not configured." }
+        }
+      }
+    },
+    "/api/tickets/{id}/categorize": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }
+      ],
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Suggest a category and priority",
+        "description": "Agents and admins receive a schema-validated suggestion based on the ticket subject and description. The endpoint does not update the ticket.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Validated category and priority suggestion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/CategorizeTicketSuggestion" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "description": "Ticket subject and description are empty." },
+          "502": { "description": "The provider failed or returned invalid categorization output." },
+          "503": { "description": "AI suggestions are not configured." }
+        }
+      }
+    },
     "/api/tickets/{id}/comments": {
       "parameters": [
         { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }
@@ -324,7 +428,7 @@
       "post": {
         "tags": ["Comments"],
         "summary": "Create a comment",
-        "description": "Author identity comes from the authenticated user. Customers may create only public comments on their own tickets; agents and admins may create public or internal comments.",
+        "description": "Author identity comes from the authenticated user. Customers may create public comments on their own tickets, and agents may create public or internal comments. Admins cannot add comments.",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -463,9 +567,29 @@
           "subject": { "type": "string", "minLength": 1 },
           "requesterEmail": { "type": "string", "format": "email" },
           "description": { "type": "string", "minLength": 1 },
+          "category": { "type": ["string", "null"], "minLength": 1, "maxLength": 100 },
+          "assigneeId": { "type": ["string", "null"], "minLength": 1, "maxLength": 100 },
           "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
           "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"] }
         }
+      },
+      "AgentAssignmentOption": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        },
+        "required": ["id", "name", "email"]
+      },
+      "CategorizeTicketSuggestion": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+           "category": { "type": "string", "enum": ["account", "billing", "technical", "product", "other"] },
+           "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] }
+         },
+         "required": ["category", "priority"]
       },
       "Ticket": {
         "type": "object",

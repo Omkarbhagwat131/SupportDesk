@@ -16,6 +16,12 @@ const agent: AuthenticatedUser = {
   role: UserRole.AGENT,
 };
 
+const admin: AuthenticatedUser = {
+  id: "admin-1",
+  email: "admin@example.test",
+  role: UserRole.ADMIN,
+};
+
 function createRepository() {
   return {
     findCommentsByTicketId: jest.fn().mockResolvedValue([]),
@@ -72,6 +78,20 @@ describe("comments service", () => {
       body: "Internal note",
       isInternal: true,
     }, agent);
+  });
+
+  test("does not allow admins to add comments", async () => {
+    const repository = createRepository();
+    const service = createCommentsService(repository);
+
+    await expect(service.createComment("ticket-1", {
+      body: "Admin comment",
+      isInternal: false,
+    }, admin)).rejects.toMatchObject({
+      statusCode: 403,
+      code: "FORBIDDEN",
+    } satisfies Partial<AppError>);
+    expect(repository.insertComment).not.toHaveBeenCalled();
   });
 
   test("preserves not-found results from the repository", async () => {

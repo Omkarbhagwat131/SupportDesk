@@ -82,6 +82,16 @@ The interactive OpenAPI documentation is served at `http://localhost:3000/docs`.
 
 Helmet security headers are enabled. Browser requests are allowed only from origins listed in `CORS_ORIGINS`, a comma-separated list of exact origins; local development defaults to `http://localhost:5173`. Postman and other non-browser clients do not need a CORS origin. Login is limited to 10 attempts per client IP in a 15-minute window.
 
+### AI ticket assistance
+
+Customers are the only role that can create tickets. Customers and agents can add comments; admins can view comments but cannot post them. Admins can assign tickets to agents and set a category directly.
+
+The ticket detail page provides **Suggest reply** for agents and **Auto-categorize** for agents and admins. Both call the API; browser code never calls Gemini directly. Reply suggestions appear in the comment field and must be accepted before they can be posted; they are never sent automatically. Categorization returns an editable suggestion only; an agent or admin must choose **Apply suggestion** to update the ticket.
+
+The categorization response is a strict JSON object: `{"category":"account|billing|technical|product|other","priority":"P1|P2|P3|P4"}`. The API parses the model output and validates both required fields against a Zod schema before returning it. Invalid JSON, missing fields, extra fields, or values outside those lists produce an error and cannot become an AI suggestion. These categories are the current AI vocabulary; the database category field remains free text for existing/manual categories.
+
+Gemini configuration belongs only in the ignored root `.env`: `GEMINI_API_KEY`, `GEMINI_MODEL`, and optionally both `GEMINI_INPUT_COST_PER_1M_TOKENS` / `GEMINI_OUTPUT_COST_PER_1M_TOKENS`. Set token prices from Google's current pricing page for the exact configured model to calculate USD cost. Each successful provider call logs Gemini-reported input/output token counts; if prices are configured it also logs calculated cost, otherwise `costUsd` is `null`. Logs exclude prompts, ticket contents, and credentials. If usage metadata is absent, no made-up token usage or cost is logged.
+
 For example, in Postman register with `POST http://localhost:3000/api/auth/register`, then log in with `POST http://localhost:3000/api/auth/login`. Use the returned token via **Authorization → Bearer Token** when calling `http://localhost:3000/api/tickets`.
 
 The [Day 10 authentication results](./postman/documents/day-10-auth-results.md) record expected and observed local API responses.
