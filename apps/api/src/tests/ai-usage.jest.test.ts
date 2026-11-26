@@ -132,6 +132,73 @@ describe("AI usage accounting", () => {
     }
   });
 
+  test("categorization timeout remains active while reading the response body", async () => {
+    const timeoutController = new AbortController();
+    const timeoutSpy = jest.spyOn(AbortSignal, "timeout").mockReturnValue(timeoutController.signal);
+    const fetcher = jest.fn<Promise<Response>, Parameters<typeof fetch>>().mockImplementation(
+      async (_input, init) => new Response(new ReadableStream({
+        start(controller) {
+          init?.signal?.addEventListener("abort", () => {
+            controller.error(new Error("request aborted"));
+          }, { once: true });
+          setImmediate(() => timeoutController.abort());
+        },
+      }), { status: 200 }),
+    );
+
+    try {
+      const client = createGeminiClient(configuration, fetcher);
+      await expect(client.categorizeTicket({ subject: "Invoice", description: "Wrong total" }))
+        .rejects.toMatchObject({
+          statusCode: 504,
+          code: "AI_TIMEOUT",
+          message: "The AI request timed out. Please try again or continue manually.",
+        });
+      expect(fetcher.mock.calls[0]?.[1]?.signal).toBeDefined();
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+  });
+
+  test("reply timeout remains active while reading the response stream", async () => {
+    const timeoutController = new AbortController();
+    const timeoutSpy = jest.spyOn(AbortSignal, "timeout").mockReturnValue(timeoutController.signal);
+    const fetcher = jest.fn<Promise<Response>, Parameters<typeof fetch>>().mockImplementation(
+      async (_input, init) => new Response(new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(
+            'data: {"candidates":[{"content":{"parts":[{"text":"Draft"}]}}]}\n\n',
+          ));
+          init?.signal?.addEventListener("abort", () => {
+            controller.error(new Error("request aborted"));
+          }, { once: true });
+          setImmediate(() => timeoutController.abort());
+        },
+      }), { status: 200 }),
+    );
+
+    try {
+      const client = createGeminiClient(configuration, fetcher);
+      const chunks = await client.streamReply({
+        ticket: { subject: "A", description: "B", status: "OPEN", priority: "P2", category: null },
+        comments: [],
+      }, new AbortController().signal);
+      const consume = async () => {
+        for await (const _chunk of chunks) {
+          // Consume until the deadline aborts the stream.
+        }
+      };
+
+      await expect(consume()).rejects.toMatchObject({
+        statusCode: 504,
+        code: "AI_TIMEOUT",
+        message: "The AI request timed out. Please try again or continue manually.",
+      });
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+  });
+
   test("does not fabricate usage or cost when Gemini omits usage metadata", async () => {
     const log = jest.spyOn(console, "info").mockImplementation(() => undefined);
     const fetcher = jest.fn<Promise<Response>, Parameters<typeof fetch>>().mockResolvedValue(new Response(JSON.stringify({

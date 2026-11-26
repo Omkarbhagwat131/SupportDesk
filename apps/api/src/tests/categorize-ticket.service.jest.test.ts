@@ -42,7 +42,20 @@ describe("categorize ticket service", () => {
     expect(dependencies.client.categorizeTicket).toHaveBeenCalledWith({
       subject: ticket.subject,
       description: ticket.description,
-    });
+    }, undefined);
+  });
+
+  test("passes the request cancellation signal to the AI client", async () => {
+    const dependencies = createDependencies();
+    const service = createCategorizeTicketService(dependencies);
+    const signal = new AbortController().signal;
+
+    await service.categorizeTicket("ticket-1", agent, signal);
+
+    expect(dependencies.client.categorizeTicket).toHaveBeenCalledWith({
+      subject: ticket.subject,
+      description: ticket.description,
+    }, signal);
   });
 
   test("allows admins to request categorization suggestions", async () => {

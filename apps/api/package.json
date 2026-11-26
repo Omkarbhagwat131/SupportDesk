@@ -6,6 +6,7 @@
     "build": "tsc",
     "start": "tsx src/server.ts",
     "import": "tsx src/importTickets.ts",
+    "evaluate:categorization": "tsx src/evaluateCategorization.ts",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

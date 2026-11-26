@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 const ticketFields = {
-  subject: z.string().trim().min(1),
+  subject: z.string().trim().min(1).max(200),
   requesterEmail: z.string().trim().email(),
-  description: z.string().trim().min(1),
+  description: z.string().trim().min(1).max(8_000),
   priority: z.enum(["P1", "P2", "P3", "P4"]),
   status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER", "RESOLVED", "CLOSED"]),
 };
