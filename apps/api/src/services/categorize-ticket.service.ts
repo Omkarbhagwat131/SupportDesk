@@ -22,7 +22,7 @@ export function createCategorizeTicketService(
   },
 ) {
   return {
-    async categorizeTicket(ticketId: string, user: AuthenticatedUser) {
+    async categorizeTicket(ticketId: string, user: AuthenticatedUser, signal?: AbortSignal) {
       if (user.role !== UserRole.AGENT && user.role !== UserRole.ADMIN) {
         throw new AppError(403, "FORBIDDEN", "Only agents can categorize tickets.");
       }
@@ -36,7 +36,7 @@ export function createCategorizeTicketService(
       const response = await dependencies.client.categorizeTicket({
         subject: ticket.subject,
         description: ticket.description,
-      });
+      }, signal);
 
       let output: unknown;
       try {
