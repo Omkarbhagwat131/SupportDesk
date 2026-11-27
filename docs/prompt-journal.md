@@ -206,6 +206,8 @@ Verification notes, test outputs, and manual browser evidence are kept separatel
 
 **Evaluation result:** `gemini-3.5-flash-lite` categorized 19 of 20 synthetic cases correctly (95%). The only mismatch was a procurement request for an accessibility statement, expected `other`, predicted `product`. The CSV and machine-readable report are in `apps/api/fixtures/`.
 
-**Limitations:** The synthetic dataset is not the lead's labelled ticket set. The lead's original ten malicious samples were not available, so live behavior against those exact samples remains unverified. The user separately reported a 20/20 manual agent-UI check; that observation has not been independently reproduced or attached as evidence.
+**Limitations:** The synthetic dataset is not the lead's labelled ticket set. The lead's original ten malicious samples were not available; live testing was performed on the repository's ten illustrative cases instead. The user separately reported a 20/20 manual agent-UI check; that observation has not been independently reproduced or attached as evidence.
+
+**Live prompt check:** All ten repository-authored illustrative injection probes passed live categorization/reply checks on `gemini-3.5-flash-lite`. The report records metadata and heuristic flags but not raw reply text. It is not a substitute for the lead's original cases or a formal guarantee.
 
 **Verification:** Full API tests passed (38 Node tests and 69 Jest tests), API build passed, frontend tests passed (34 tests), frontend build passed, and frontend lint passed. The targeted categorization-evaluator tests also passed (4 tests).
