@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiRequestError } from "../../../lib/api";
+import { ApiRequestError, getAiManualFallbackMessage } from "../../../lib/api";
 import { categorizeTicket, createTicket, suggestReply, updateTicket } from "./tickets";
 
 afterEach(() => {
@@ -8,6 +8,18 @@ afterEach(() => {
 });
 
 describe("ticket API functions", () => {
+  it("returns a manual fallback message for AI timeout and provider errors", () => {
+    expect(getAiManualFallbackMessage(
+      new ApiRequestError("Timed out", 504, "AI_TIMEOUT"),
+      "reply",
+    )).toBe("AI reply draft is unavailable. Continue manually; the ticket workflow is unchanged.");
+
+    expect(getAiManualFallbackMessage(
+      new ApiRequestError("Provider unavailable", 502, "AI_PROVIDER_ERROR"),
+      "categorization",
+    )).toBe("AI categorization is unavailable. Continue manually; the ticket workflow is unchanged.");
+  });
+
   it("creates a ticket using the backend contract", async () => {
     vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
     vi.stubGlobal("localStorage", { getItem: vi.fn().mockReturnValue("agent-token") });

@@ -1,0 +1,21 @@
+id,subject,description,expected_category
+case-01,Password reset link expired,The reset link says it has expired even though I requested it a few minutes ago,account
+case-02,Change the email on my profile,I can sign in but need to update the email address associated with my account,account
+case-03,Authenticator app unavailable,I replaced my phone and cannot access the authenticator codes needed to sign in,account
+case-04,Remove former employee access,Please revoke the account access for a former member of our team,account
+case-05,Duplicate charge on this month's invoice,My card was charged twice for the same monthly subscription invoice,billing
+case-06,Incorrect tax on invoice,The tax amount on the latest invoice does not match the rate shown on the invoice,billing
+case-07,Plan upgrade charged immediately,We upgraded our subscription and were charged more than the prorated amount we expected,billing
+case-08,Need invoice with company tax number,Please send an updated invoice that includes our company's tax registration number,billing
+case-09,File upload returns an error,Uploading a document fails with an HTTP 500 error every time,technical
+case-10,Data synchronization is stuck,The dashboard has not synchronized new records since yesterday and displays a sync failure,technical
+case-11,Application crashes when saving,The app closes whenever I save changes to a ticket,technical
+case-12,Pages take too long to load,The reports page takes over forty seconds to load and often times out,technical
+case-13,Create a saved ticket view,How do I save a filter so my team can reuse the same ticket view,product
+case-14,Set a daily notification summary,Where can I configure a daily email digest instead of one email per update,product
+case-15,Schedule a recurring report,How can I configure a report to run automatically every Monday,product
+case-16,Customize dashboard widgets,Can I rearrange the dashboard widgets and choose which ones appear,product
+case-17,What are your weekend support hours,Please tell me when your customer support team is available on weekends,other
+case-18,Request a copy of the accessibility statement,Our procurement team needs your current accessibility statement,other
+case-19,Where can I send a press inquiry,I am a journalist looking for the correct contact for a media question,other
+case-20,Company mailing address for legal notice,Please provide the postal address for sending a formal legal notice,other

@@ -29,6 +29,27 @@ export class ApiRequestError extends Error {
   }
 }
 
+export function getAiManualFallbackMessage(
+  error: unknown,
+  feature: "reply" | "categorization",
+): string {
+  const featureName = feature === "reply" ? "reply draft" : "categorization";
+  if (error instanceof ApiRequestError) {
+    if (
+      error.code === "AI_TIMEOUT"
+      || error.code === "AI_PROVIDER_ERROR"
+      || error.code === "AI_NOT_CONFIGURED"
+      || error.code === "INVALID_AI_OUTPUT"
+      || error.status === 502
+      || error.status === 503
+      || error.status === 504
+    ) {
+      return `AI ${featureName} is unavailable. Continue manually; the ticket workflow is unchanged.`;
+    }
+  }
+  return `Unable to generate the AI ${featureName}. Continue manually; the ticket workflow is unchanged.`;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

@@ -8,7 +8,7 @@ import { useTicket } from "../features/tickets/hooks/useTicket";
 import { useTicketComments } from "../features/tickets/hooks/useTicketComments";
 import { useUpdateTicket } from "../features/tickets/hooks/useTicketMutations";
 import { ticketStatusOptions } from "../features/tickets/status";
-import { ApiRequestError } from "../lib/api";
+import { ApiRequestError, getAiManualFallbackMessage } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import {
   categorizeTicket,
@@ -89,7 +89,7 @@ export function TicketDetailPage() {
       setIsReviewingReply(true);
     } catch (reason) {
       setDraftReply(null);
-      setDraftError(reason instanceof Error ? reason.message : "Unable to generate a reply draft.");
+      setDraftError(getAiManualFallbackMessage(reason, "reply"));
     } finally {
       setIsSuggestingReply(false);
     }
@@ -102,7 +102,7 @@ export function TicketDetailPage() {
     try {
       setCategorySuggestion(await categorizeTicket(ticketId));
     } catch (reason) {
-      setCategoryError(reason instanceof Error ? reason.message : "Unable to categorize this ticket.");
+      setCategoryError(getAiManualFallbackMessage(reason, "categorization"));
     } finally {
       setIsCategorizing(false);
     }

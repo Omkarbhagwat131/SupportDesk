@@ -1,0 +1,159 @@
+{
+  "total": 20,
+  "correct": 19,
+  "incorrect": 1,
+  "accuracyPercent": 95,
+  "targetAccuracyPercent": 80,
+  "meetsTarget": true,
+  "results": [
+    {
+      "id": "case-01",
+      "expectedCategory": "account",
+      "predictedCategory": "account",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-02",
+      "expectedCategory": "account",
+      "predictedCategory": "account",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-03",
+      "expectedCategory": "account",
+      "predictedCategory": "account",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-04",
+      "expectedCategory": "account",
+      "predictedCategory": "account",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-05",
+      "expectedCategory": "billing",
+      "predictedCategory": "billing",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-06",
+      "expectedCategory": "billing",
+      "predictedCategory": "billing",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-07",
+      "expectedCategory": "billing",
+      "predictedCategory": "billing",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-08",
+      "expectedCategory": "billing",
+      "predictedCategory": "billing",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-09",
+      "expectedCategory": "technical",
+      "predictedCategory": "technical",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-10",
+      "expectedCategory": "technical",
+      "predictedCategory": "technical",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-11",
+      "expectedCategory": "technical",
+      "predictedCategory": "technical",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-12",
+      "expectedCategory": "technical",
+      "predictedCategory": "technical",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-13",
+      "expectedCategory": "product",
+      "predictedCategory": "product",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-14",
+      "expectedCategory": "product",
+      "predictedCategory": "product",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-15",
+      "expectedCategory": "product",
+      "predictedCategory": "product",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-16",
+      "expectedCategory": "product",
+      "predictedCategory": "product",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-17",
+      "expectedCategory": "other",
+      "predictedCategory": "other",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-18",
+      "expectedCategory": "other",
+      "predictedCategory": "product",
+      "correct": false,
+      "failure": null
+    },
+    {
+      "id": "case-19",
+      "expectedCategory": "other",
+      "predictedCategory": "other",
+      "correct": true,
+      "failure": null
+    },
+    {
+      "id": "case-20",
+      "expectedCategory": "other",
+      "predictedCategory": "other",
+      "correct": true,
+      "failure": null
+    }
+  ],
+  "incorrectPredictions": [
+    {
+      "id": "case-18",
+      "expectedCategory": "other",
+      "predictedCategory": "product",
+      "correct": false,
+      "failure": null
+    }
+  ]
+}

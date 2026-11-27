@@ -138,3 +138,22 @@ Pending / blockers:
 
 Term of the day: UAT — User Acceptance Testing
 Overall status: Done
+
+## 27 November 2026 — AI guardrail manual fallback
+
+- AI reply-draft and categorization failures now show a manual-continuation message in the ticket detail UI.
+- Failed or interrupted reply generation discards partial draft text; no AI draft is placed in the comment form.
+- Failed categorization leaves the ticket's saved category and priority unchanged; staff can continue using normal ticket controls.
+- Frontend tests: `npm test --prefix apps/web` passed (14 files, 34 tests).
+- Frontend build: `npm run build --prefix apps/web` passed.
+- This verifies the UI fallback mapping and build. A live Gemini outage/timeout browser check has not been performed.
+
+## 27 November 2026 — Synthetic AI categorization evaluation
+
+- Added a balanced, 20-case synthetic smoke dataset at `apps/api/fixtures/categorization-evaluation-synthetic.csv`; it contains no customer data and is not the lead's dataset.
+- Live Gemini run using `gemini-3.5-flash-lite`: **19/20 (95%)**, target passed. `case-18` was expected `other` and predicted `product`.
+- The final run completed all 20 requests without provider errors. Earlier rapid requests encountered HTTP 429; the evaluator now spaces requests and retries rate-limited requests.
+- Report: `apps/api/fixtures/categorization-evaluation-synthetic-report.json`.
+- API tests passed (38 Node tests and 69 Jest tests); API build passed. Targeted categorization evaluator tests passed (4 tests).
+- Frontend tests passed (34 tests), frontend build passed, and frontend lint passed.
+- The result does not replace the lead's labelled evaluation set or the user's separate 20/20 manual UI check.

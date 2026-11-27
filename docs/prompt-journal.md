@@ -197,3 +197,15 @@ Verification notes, test outputs, and manual browser evidence are kept separatel
 **Verification:** The frontend test suite passed 28 tests across 13 files, lint passed, and the production build passed. The API was unavailable during browser verification, and Lighthouse CLI evidence could not be obtained because no Lighthouse configuration or audit run was available in the existing project; this remains a blocker rather than a claimed score.
 
 **Final verification update:** The API and development database were started, migrations/seed completed, and a synthetic customer created and tested a ticket/comment workflow. Lighthouse accessibility audits of login and register passed with scores of 95 and 100. The API integration suite passed 11 of 11 tests. Final verification was not blocked by missing infrastructure.
+
+## 27 November 2026 — Day 17: AI Guardrails and Evaluation
+
+**Prompt/context:** Review the Day 17 AI safety checklist, complete the manual fallback behavior, and produce reproducible categorization-evaluation evidence without using customer data.
+
+**Summary:** AI failures in reply drafting and categorization now instruct staff to continue manually; incomplete reply drafts are discarded. The categorization evaluator spaces provider calls and retries transient HTTP 429 responses. A synthetic, balanced 20-ticket dataset was prepared and evaluated against Gemini.
+
+**Evaluation result:** `gemini-3.5-flash-lite` categorized 19 of 20 synthetic cases correctly (95%). The only mismatch was a procurement request for an accessibility statement, expected `other`, predicted `product`. The CSV and machine-readable report are in `apps/api/fixtures/`.
+
+**Limitations:** The synthetic dataset is not the lead's labelled ticket set. The lead's original ten malicious samples were not available, so live behavior against those exact samples remains unverified. The user separately reported a 20/20 manual agent-UI check; that observation has not been independently reproduced or attached as evidence.
+
+**Verification:** Full API tests passed (38 Node tests and 69 Jest tests), API build passed, frontend tests passed (34 tests), frontend build passed, and frontend lint passed. The targeted categorization-evaluator tests also passed (4 tests).
