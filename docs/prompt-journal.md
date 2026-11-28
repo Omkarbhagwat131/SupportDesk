@@ -211,3 +211,15 @@ Verification notes, test outputs, and manual browser evidence are kept separatel
 **Live prompt check:** All ten repository-authored illustrative injection probes passed live categorization/reply checks on `gemini-3.5-flash-lite`. The report records metadata and heuristic flags but not raw reply text. It is not a substitute for the lead's original cases or a formal guarantee.
 
 **Verification:** Full API tests passed (38 Node tests and 69 Jest tests), API build passed, frontend tests passed (34 tests), frontend build passed, and frontend lint passed. The targeted categorization-evaluator tests also passed (4 tests).
+
+## 28 November 2026 — Week 1: Debugging and Code-Generation Prompts
+
+These prompts are templates. Replace bracketed text with the relevant code, behavior, or test output, and do not include credentials or real customer data.
+
+1. **Debug a failing test:** “In this TypeScript/Jest project, inspect the failing test and the relevant implementation. Explain the most likely root cause using evidence from the code. Suggest the smallest fix, add a regression test for the failure, and run the focused test command. Do not change unrelated behavior. Failure output: [paste sanitized output].”
+2. **Trace an unexpected result:** “Expected [expected behavior], but observed [actual behavior]. Trace the relevant code path and identify where the values or control flow diverge. Show the evidence, propose a minimal fix, and list the command I should run to verify it. Ask me before making a change if the evidence is inconclusive.”
+3. **Generate a focused feature:** “Implement [specific feature] in this existing TypeScript project. First inspect nearby code and follow its established patterns. Requirements: [acceptance criteria]. Constraints: [compatibility, dependencies, and scope]. Add focused Jest tests for expected behavior and important edge cases, then run them.”
+4. **Generate edge-case tests:** “Write Jest tests for [function/module] based on its current implementation and these requirements: [requirements]. Cover normal, boundary, and invalid inputs. Do not modify production code. For each test, use a clear behavior-based name and assert observable results rather than implementation details.”
+5. **Generate a safe refactor:** “Refactor [specific code] to improve [one clearly stated concern] while preserving its existing public behavior. Inspect callers and tests first. Avoid new dependencies and unrelated edits. Add or update focused Jest tests, run the relevant tests and TypeScript build, and summarize any behavior that could not be verified.”
+
+**Verification:** The five templates were reviewed for clear context, specific goals, guardrails, and testable outcomes. Replace placeholders with sanitized project-specific details before use.
